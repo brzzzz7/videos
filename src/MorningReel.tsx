@@ -15,6 +15,7 @@ import "./fonts";
 import { CaptionsApple } from "./components/CaptionsApple";
 import { Grain, Vignette } from "./components/Grain";
 import { UI } from "./fonts";
+import { ramp } from "./lib/audio";
 import { endCard, hook } from "./data/morning";
 import {
   FPS,
@@ -339,12 +340,17 @@ export const MorningReel: React.FC = () => {
       <Audio
         src={staticFile("morning-music.m4a")}
         volume={(f) =>
-          interpolate(
-            f,
-            [0, hookFrames - 8, hookFrames + 10, endCardFrame - 20, endCardFrame + 12, totalFrames - 18, totalFrames],
-            [0.3, 0.28, 0.16, 0.18, 0.42, 0.4, 0],
-            { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-          )
+          // The voice carries this reel, so the bed stays well under it and
+          // only comes up for the opening title and the end card.
+          ramp(f, [
+            [0, 0.22],
+            [hookFrames - 8, 0.2],
+            [hookFrames + 10, 0.085],
+            [endCardFrame - 20, 0.1],
+            [endCardFrame + 10, 0.3],
+            [totalFrames - 10, 0.28],
+            [totalFrames, 0],
+          ])
         }
       />
     </AbsoluteFill>

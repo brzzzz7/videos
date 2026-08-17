@@ -78,10 +78,10 @@
       "head": 0.267,
       "file": "shots/e3b.mp4",
       "framing": "mid",
-      "start": 127.1,
+      "start": 127.6,
       "end": 131.85,
       "tail": 0.0,
-      "pictureStart": 127.1
+      "pictureStart": 127.6
     },
     {
       "id": "outro",
@@ -89,7 +89,7 @@
       "file": "shots/outro.mp4",
       "framing": "close",
       "start": 150.95,
-      "end": 155.5,
+      "end": 154.9,
       "tail": 0.0,
       "pictureStart": 148.5
     },
@@ -99,7 +99,7 @@
       "file": "shots/ctaa.mp4",
       "framing": "med",
       "start": 164.15,
-      "end": 169.75,
+      "end": 167.8,
       "tail": 0.0,
       "pictureStart": 164.15
     },
@@ -109,8 +109,8 @@
       "file": "shots/ctab.mp4",
       "framing": "mid",
       "start": 172.8,
-      "end": 176.4,
-      "tail": 1.4,
+      "end": 175.5,
+      "tail": 0.8,
       "pictureStart": 110.0
     }
   ]

@@ -32,6 +32,10 @@ FRAMING = {
 
 # id, framing, audio in, audio out, tail held after the audio, picture start
 #
+# The in/out points sit on real speech, not on the silence around it: heads and
+# tails were trimmed against the silence map, so no shot opens or closes on dead
+# air (what was left of it read as "the video stalls").
+#
 # The picture usually comes from the same moment as the voice. Where he leans
 # out of frame mid-sentence, the picture is taken from another moment of the
 # same take instead (measured with scripts/presence.py) — the voice is
@@ -44,10 +48,10 @@ SHOTS = [
     ("e2b", "med", 85.15, 88.75, 0.0, None),
     ("e2c", "close", 92.40, 93.40, 0.0, None),
     ("e3a", "med", 119.65, 125.55, 0.0, 135.00),
-    ("e3b", "mid", 127.10, 131.85, 0.0, None),
-    ("outro", "close", 150.95, 155.50, 0.0, 148.50),
-    ("ctaa", "med", 164.15, 169.75, 0.0, None),
-    ("ctab", "mid", 172.80, 176.40, 1.4, 110.00),
+    ("e3b", "mid", 127.60, 131.85, 0.0, None),
+    ("outro", "close", 150.95, 154.90, 0.0, 148.50),
+    ("ctaa", "med", 164.15, 167.80, 0.0, None),
+    ("ctab", "mid", 172.80, 175.50, 0.8, 110.00),
 ]
 
 

@@ -1,4 +1,21 @@
-"""Generate an original punchy beat for the reel (no samples, pure synthesis)."""
+"""Generate an original music bed for a reel — no samples, pure synthesis.
+
+    python3 scripts/music.py <seconds> <out.wav> [bpm]
+
+Design rules, learned the hard way after a first version that crackled:
+
+* No raw white noise. Every noise element is band-limited with an FFT
+  brick-wall filter, so there are no huge sample-to-sample jumps (those are what
+  you hear as crackle).
+* No tanh saturation on the mix. Levels are budgeted instead, and a soft-knee
+  limiter only catches the last dB.
+* Every voice gets a real attack and release (≥ 4 ms / ≥ 25 ms), so nothing
+  starts or stops on a discontinuity.
+* The weight sits in the 150–2000 Hz range, not in the sub: a phone speaker
+  cannot reproduce 50 Hz, and a bed that lives down there reads as "broken".
+
+scripts/check-music.py verifies those properties on the rendered file.
+"""
 
 import sys
 import wave
@@ -6,256 +23,265 @@ import wave
 import numpy as np
 
 SR = 48000
-# tempo: 3rd argument, e.g. `python3 scripts/music.py 55 beat.wav 124`
-BPM = float(sys.argv[3]) if len(sys.argv) > 3 else 100.0
-BEAT = 60.0 / BPM          # 0.6 s
-BAR = 4 * BEAT             # 2.4 s
 DUR = float(sys.argv[1]) if len(sys.argv) > 1 else 60.0
 OUT = sys.argv[2] if len(sys.argv) > 2 else "beat.wav"
+BPM = float(sys.argv[3]) if len(sys.argv) > 3 else 100.0
 
+BEAT = 60.0 / BPM
+BAR = 4 * BEAT
 FOUR_ON_FLOOR = BPM >= 115
+
 rng = np.random.default_rng(7)
-L = int(DUR * SR) + SR
+L = int((DUR + 2) * SR)
 left = np.zeros(L)
 right = np.zeros(L)
 
 
-def add(buf, pos, sig, gain=1.0, pan=0.0):
-    """Mix sig into the stereo bus at time pos (seconds) with constant-power pan."""
+# ----------------------------------------------------------------- primitives
+def band(x, low=None, high=None, slope=0.12):
+    """Brick-wall-ish band filter with a smooth (cosine) transition."""
+    n = len(x)
+    spec = np.fft.rfft(x)
+    f = np.fft.rfftfreq(n, 1 / SR)
+    gain = np.ones_like(f)
+    if low:
+        w = np.clip((f - low * (1 - slope)) / (low * slope * 2 + 1e-9), 0, 1)
+        gain *= 0.5 - 0.5 * np.cos(np.pi * w)
+    if high:
+        w = np.clip((high * (1 + slope) - f) / (high * slope * 2 + 1e-9), 0, 1)
+        gain *= 0.5 - 0.5 * np.cos(np.pi * w)
+    return np.fft.irfft(spec * gain, n)
+
+
+def env(n, attack, release, hold=None, curve=1.6):
+    """Attack / hold / exponential-ish release, always ending at exactly zero."""
+    a = max(2, int(attack * SR))
+    r = max(2, int(release * SR))
+    h = n - a - r if hold is None else int(hold * SR)
+    h = max(0, h)
+    total = a + h + r
+    out = np.concatenate([
+        np.sin(np.linspace(0, np.pi / 2, a)) ** 2,
+        np.ones(h),
+        np.linspace(1, 0, r) ** curve,
+    ])
+    if total < n:
+        out = np.pad(out, (0, n - total))
+    return out[:n]
+
+
+def noise(n, low, high, decay, level):
+    """Band-limited noise burst — the only source of 'air' in the bed."""
+    raw = rng.normal(0, 1, n)
+    shaped = band(raw, low=low, high=high)
+    shaped /= max(1e-9, np.abs(shaped).max())
+    return shaped * env(n, 0.004, decay, hold=0.0) * level
+
+
+def tone(freq, n, harmonics=(1.0, 0.32, 0.12), detune=0.0):
+    t = np.arange(n) / SR
+    out = np.zeros(n)
+    for i, amp in enumerate(harmonics, start=1):
+        f = freq * i * (1 + detune * (i - 1))
+        if f > SR / 2.2:
+            break
+        out += amp * np.sin(2 * np.pi * f * t)
+    return out / sum(harmonics[: max(1, len(harmonics))])
+
+
+def add(pos, sig, gain=1.0, pan=0.0, bus=None):
     i = int(pos * SR)
     if i < 0:
-        sig = sig[-i:]
-        i = 0
+        sig, i = sig[-i:], 0
     n = min(len(sig), L - i)
     if n <= 0:
         return
     ang = (pan + 1) * np.pi / 4
-    left[i:i + n] += sig[:n] * gain * np.cos(ang) * np.sqrt(2) / 1.0
-    right[i:i + n] += sig[:n] * gain * np.sin(ang) * np.sqrt(2) / 1.0
-    if buf is not None:
-        buf[i:i + n] += sig[:n] * gain
+    left[i:i + n] += sig[:n] * gain * np.cos(ang) * 1.414
+    right[i:i + n] += sig[:n] * gain * np.sin(ang) * 1.414
+    if bus is not None:
+        bus[i:i + n] += sig[:n] * gain
 
 
-def env(n, a, d, s=0.0, r=0.0, sus=0.7):
-    """Simple ADSR over n samples (times in seconds)."""
-    a, d, r = int(a * SR), int(d * SR), int(r * SR)
-    s = max(0, n - a - d - r)
-    parts = [
-        np.linspace(0, 1, a, endpoint=False) if a else np.zeros(0),
-        np.linspace(1, sus, d, endpoint=False) if d else np.zeros(0),
-        np.full(s, sus),
-        np.linspace(sus, 0, r) if r else np.zeros(0),
-    ]
-    out = np.concatenate(parts)
-    return np.pad(out, (0, max(0, n - len(out))))[:n]
-
-
-def expdec(n, tau):
-    return np.exp(-np.arange(n) / (tau * SR))
-
-
-def lowpass(x, cutoff):
-    """One-pole lowpass, cutoff in Hz."""
-    a = np.exp(-2 * np.pi * cutoff / SR)
-    y = np.empty_like(x)
-    acc = 0.0
-    for i, v in enumerate(x):
-        acc = (1 - a) * v + a * acc
-        y[i] = acc
-    return y
-
-
-def highpass(x, cutoff):
-    return x - lowpass(x, cutoff)
-
-
-def kick(dur=0.42):
-    n = int(dur * SR)
+# --------------------------------------------------------------------- voices
+def kick(level=0.4):
+    n = int(0.34 * SR)
     t = np.arange(n) / SR
-    f = 48 + 110 * np.exp(-t / 0.028)
-    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * expdec(n, 0.11)
-    click = highpass(rng.normal(0, 1, n) * expdec(n, 0.004), 1800) * 0.25
-    return np.tanh((body + click) * 1.5) * 0.82
+    freq = 55 + 62 * np.exp(-t / 0.03)
+    body = np.sin(2 * np.pi * np.cumsum(freq) / SR) * env(n, 0.004, 0.28, hold=0.01, curve=2.2)
+    click = noise(int(0.05 * SR), 1200, 4200, 0.035, 0.16)
+    out = body * 0.9
+    out[: len(click)] += click
+    return out * level
 
 
-def snare(dur=0.22, bright=1.0):
-    n = int(dur * SR)
-    noise = highpass(rng.normal(0, 1, n), 900 * bright) * expdec(n, 0.055)
-    t = np.arange(n) / SR
-    tone = (np.sin(2 * np.pi * 185 * t) + np.sin(2 * np.pi * 278 * t)) * expdec(n, 0.03)
-    return np.tanh((noise * 0.9 + tone * 0.5) * 1.2) * 0.9
+def snare(level=0.48):
+    n = int(0.2 * SR)
+    body = (tone(196, n, (1.0, 0.4)) * env(n, 0.003, 0.09, hold=0.0)) * 0.5
+    top = noise(n, 900, 6500, 0.11, 0.5)
+    return (body + top) * level
 
 
-def clap(dur=0.3):
-    n = int(dur * SR)
+def clap(level=0.42):
+    n = int(0.26 * SR)
     out = np.zeros(n)
-    for k, off in enumerate([0, 0.009, 0.019, 0.03]):
+    for k, off in enumerate((0.0, 0.011, 0.023)):
         i = int(off * SR)
-        seg = highpass(rng.normal(0, 1, n - i), 1200) * expdec(n - i, 0.02 + 0.03 * (k == 3))
-        out[i:] += seg * (0.55 if k < 3 else 1.0)
-    return out * 0.66
+        out[i:] += noise(n - i, 1100, 6000, 0.05 if k < 2 else 0.13, 0.6)
+    return out / 1.8 * level
 
 
-def hat(dur=0.07, open_=False, cut=6500):
+def shaker(level=0.40, open_=False):
+    n = int((0.16 if open_ else 0.06) * SR)
+    return noise(n, 5200, 11000, 0.1 if open_ else 0.03, 0.55) * level
+
+
+def bass(freq, dur, level=0.30):
     n = int(dur * SR)
-    tau = 0.09 if open_ else 0.012
-    return highpass(rng.normal(0, 1, n) * expdec(n, tau), cut) * 0.55
+    sig = tone(freq, n, (1.0, 0.22, 0.06))
+    sig = band(sig, high=520)
+    return sig * env(n, 0.008, min(0.14, dur * 0.5), hold=max(0.0, dur - 0.16)) * level
 
 
-def bass(freq, dur):
+def keys(freq, dur, level=0.26, detune=0.0015):
+    """Soft electric-piano-ish voice: where the music actually lives."""
     n = int(dur * SR)
-    t = np.arange(n) / SR
-    sub = np.sin(2 * np.pi * freq * t)
-    saw = 2 * ((freq * t) % 1) - 1
-    sig = lowpass(sub * 0.85 + saw * 0.3, 260)
-    return np.tanh(sig * 1.4) * env(n, 0.006, 0.05, r=0.06, sus=0.85) * 0.42
+    sig = tone(freq, n, (1.0, 0.5, 0.22, 0.09), detune=detune)
+    sig += 0.4 * tone(freq * (1 + detune * 4), n, (1.0, 0.3))
+    sig = band(sig, low=110, high=4200)
+    return sig / 1.4 * env(n, 0.016, dur * 0.7, hold=dur * 0.12) * level
 
 
-def pluck(freq, dur, detune=0.004, cut=3400, gain=0.16):
-    n = int(dur * SR)
-    t = np.arange(n) / SR
-    sig = np.zeros(n)
-    for d in (-detune, 0.0, detune):
-        f = freq * (1 + d)
-        sig += 2 * ((f * t) % 1) - 1
-    sig = lowpass(sig / 3, cut) * expdec(n, 0.16) * env(n, 0.004, 0.02, r=0.05, sus=0.9)
-    return sig * gain
-
-
-def stab(freqs, dur, gain=0.13, cut=2900):
+def pad(freqs, dur, level=0.15):
     n = int(dur * SR)
     out = np.zeros(n)
     for f in freqs:
-        out += pluck(f, dur, cut=cut, gain=1.0)
-    return out / len(freqs) * gain
+        out += tone(f, n, (1.0, 0.3, 0.14))
+    out = band(out / len(freqs), low=150, high=2600)
+    return out * env(n, 0.35, dur * 0.45, hold=dur * 0.2) * level
 
 
-def riser(dur):
+def sweep(dur, level=0.12):
     n = int(dur * SR)
-    t = np.arange(n) / SR
-    noise = rng.normal(0, 1, n)
-    swept = np.zeros(n)
-    # coarse band sweep: crossfade a few highpass stages
-    for k, c in enumerate([400, 1200, 3000, 7000]):
-        w = np.clip(1 - abs(t / dur - k / 3) * 3, 0, 1)
-        swept += highpass(noise, c) * w
-    ramp = (t / dur) ** 2
-    return swept * ramp * 0.22
-
-
-def impact():
-    n = int(1.4 * SR)
-    t = np.arange(n) / SR
-    boom = np.sin(2 * np.pi * (70 * np.exp(-t / 0.25) + 34) * t) * expdec(n, 0.34)
-    crash = highpass(rng.normal(0, 1, n), 4000) * expdec(n, 0.42) * 0.25
-    return np.tanh((boom * 1.1 + crash) * 1.2) * 0.7
-
-
-def reverb(x, taps=((0.031, 0.34), (0.053, 0.26), (0.079, 0.19), (0.114, 0.13))):
-    out = np.zeros_like(x)
-    for d, g in taps:
-        i = int(d * SR)
-        out[i:] += x[:len(x) - i] * g
-    return lowpass(out, 4200)
+    raw = rng.normal(0, 1, n)
+    out = np.zeros(n)
+    steps = 8
+    for k in range(steps):
+        lo = 300 * (1.35 ** k)
+        seg = band(raw, low=lo, high=min(lo * 2.4, 15000))
+        w = np.clip(1 - abs(np.linspace(0, steps - 1, n) - k) / 1.4, 0, 1)
+        out += seg * w
+    out /= max(1e-9, np.abs(out).max())
+    ramp = np.linspace(0, 1, n) ** 2.2
+    return out * ramp * env(n, 0.05, 0.12) * level
 
 
 # ---------------------------------------------------------------- arrangement
-# Am - F - C - G  (i - VI - III - VII), one chord per bar
-NOTE = {"A2": 110.00, "C3": 130.81, "E3": 164.81, "F2": 87.31, "A3": 220.00,
-        "C4": 261.63, "E4": 329.63, "G2": 98.00, "B3": 246.94, "D4": 293.66,
-        "F3": 174.61, "G3": 196.00, "A4": 440.00, "G4": 392.00, "F4": 349.23}
+NOTE = {n: 440 * 2 ** ((i - 9) / 12) for i, n in enumerate(
+    "C C# D D# E F F# G G# A A# B".split())}
+
+
+def note(name, octave):
+    return NOTE[name] * 2 ** (octave - 4)
+
+
+# Am - F - C - G, one chord per bar
 PROG = [
-    ("A2", [NOTE["A3"], NOTE["C4"], NOTE["E4"]]),
-    ("F2", [NOTE["A3"], NOTE["C4"], NOTE["F4"]]),
-    ("C3", [NOTE["C4"], NOTE["E4"], NOTE["G4"]]),
-    ("G2", [NOTE["B3"], NOTE["D4"], NOTE["G4"]]),
+    ("A", 2, [note("A", 3), note("C", 4), note("E", 4)]),
+    ("F", 2, [note("A", 3), note("C", 4), note("F", 4)]),
+    ("C", 3, [note("C", 4), note("E", 4), note("G", 4)]),
+    ("G", 2, [note("B", 3), note("D", 4), note("G", 4)]),
 ]
-ARP = [[NOTE["A3"], NOTE["C4"], NOTE["E4"], NOTE["C4"]],
-       [NOTE["A3"], NOTE["C4"], NOTE["F4"], NOTE["C4"]],
-       [NOTE["C4"], NOTE["E4"], NOTE["G4"], NOTE["E4"]],
-       [NOTE["B3"], NOTE["D4"], NOTE["G4"], NOTE["D4"]]]
+ARP = [
+    [note("A", 4), note("C", 5), note("E", 4), note("C", 5)],
+    [note("A", 4), note("C", 5), note("F", 4), note("C", 5)],
+    [note("C", 5), note("E", 4), note("G", 4), note("E", 5)],
+    [note("B", 4), note("D", 5), note("G", 4), note("D", 5)],
+]
 
-n_bars = int(np.ceil(DUR / BAR)) + 1
-lead_bus = np.zeros(L)
+bars = int(np.ceil(DUR / BAR)) + 1
+lead = np.zeros(L)
 
-add(None, 0.0, impact(), 0.9)
-add(None, 0.0, riser(BAR * 0.9), 0.8)
+add(0.0, sweep(BAR * 0.8), 0.7)
 
-for b in range(n_bars):
+for b in range(bars):
     t0 = b * BAR
-    root, chord = PROG[b % 4]
-    section_in = t0 > BAR * 0.5            # groove starts after the intro bar
-    late = t0 > DUR - BAR * 2              # last two bars: CTA lift
+    root_name, root_oct, chord = PROG[b % 4]
+    root = note(root_name, root_oct)
+    playing = t0 > BAR * 0.45
+    last = t0 > DUR - BAR * 2
 
-    # fast tempos get a four-on-the-floor pulse, slower ones a trap pattern
     if FOUR_ON_FLOOR:
-        for off in (0.0, 1.0, 2.0, 3.0):
-            add(None, t0 + off * BEAT, kick(), 0.92)
-        if b % 4 == 3:
-            add(None, t0 + 3.5 * BEAT, kick(), 0.6)
+        for k in range(4):
+            add(t0 + k * BEAT, kick(0.42 if k == 0 else 0.35))
     else:
         for off in (0.0, 1.5, 2.0, 3.5):
-            add(None, t0 + off * BEAT, kick(), 0.9)
-        if b % 4 == 3:
-            add(None, t0 + 2.75 * BEAT, kick(), 0.7)
+            add(t0 + off * BEAT, kick(0.4))
 
-    if section_in:
-        # backbeat
-        add(None, t0 + 1 * BEAT, snare(), 0.55, pan=-0.05)
-        add(None, t0 + 3 * BEAT, clap(), 0.6, pan=0.05)
-        if FOUR_ON_FLOOR:
-            for off in (0.5, 1.5, 2.5, 3.5):
-                add(None, t0 + off * BEAT, hat(dur=0.16, open_=True), 0.22, pan=-0.2)
-        # hats: 8ths with 16th rolls
-        for i in range(8):
-            p = t0 + i * BEAT / 2
-            add(None, p, hat(), 0.5 if i % 2 == 0 else 0.32, pan=0.18)
-            if i in (3, 7):
-                add(None, p + BEAT / 4, hat(dur=0.05), 0.26, pan=-0.18)
-        if b % 4 == 3:
-            add(None, t0 + 3.5 * BEAT, hat(dur=0.22, open_=True), 0.35, pan=0.2)
+    if not playing:
+        continue
 
-        # bass: root on 1, octave push on 2.5 and 3.5
-        f = NOTE[root]
-        add(None, t0, bass(f, BEAT * 1.4), 1.0)
-        add(None, t0 + 1.5 * BEAT, bass(f, BEAT * 0.5), 0.8)
-        add(None, t0 + 2.0 * BEAT, bass(f * 1.5, BEAT * 0.5), 0.6)
-        add(None, t0 + 3.5 * BEAT, bass(f, BEAT * 0.5), 0.8)
+    add(t0 + 1 * BEAT, snare(), pan=-0.05)
+    add(t0 + 3 * BEAT, clap(), pan=0.06)
 
-        # chord stab on the off-beat + arp sparkle
-        gain = 0.30 if not late else 0.40
-        s = stab(chord, BEAT * 1.1, gain=gain)
-        add(lead_bus, t0 + 0.5 * BEAT, s, 1.0, pan=-0.12)
-        add(lead_bus, t0 + 2.5 * BEAT, stab(chord, BEAT * 0.8, gain=gain * 0.8), 1.0, pan=0.12)
-        arp = ARP[b % 4]
-        for i in range(8):
-            note = arp[i % 4] * (2.0 if (i >= 4 and late) else 1.0)
-            add(lead_bus, t0 + i * BEAT / 2, pluck(note, BEAT * 0.45, gain=0.14 if not late else 0.19),
-                1.0, pan=0.25 if i % 2 else -0.25)
+    for k in range(8):
+        p = t0 + k * BEAT / 2
+        add(p, shaker(0.42 if k % 2 == 0 else 0.27), pan=0.2)
+    if FOUR_ON_FLOOR:
+        for off in (0.5, 1.5, 2.5, 3.5):
+            add(t0 + off * BEAT, shaker(0.17, open_=True), pan=-0.22)
+    if b % 4 == 3:
+        add(t0 + 3.5 * BEAT, shaker(0.22, open_=True), pan=0.24)
 
-    if late and b == n_bars - 2:
-        add(None, t0, impact(), 0.5)
+    add(t0, bass(root, BEAT * 1.35), 1.0)
+    add(t0 + 1.5 * BEAT, bass(root, BEAT * 0.45), 0.85)
+    add(t0 + 2.0 * BEAT, bass(root * 1.5, BEAT * 0.45), 0.6)
+    add(t0 + 3.5 * BEAT, bass(root, BEAT * 0.45), 0.8)
 
-# a touch of space on the melodic bus only
-wet = reverb(lead_bus) * 0.5
-add(None, 0.0, wet, 1.0, pan=-0.3)
-add(None, 0.0, wet, 1.0, pan=0.3)
+    add(t0, pad(chord, BAR * 1.05, 0.15 if not last else 0.19), 1.0, bus=lead)
+    for k, f in enumerate(chord):
+        add(t0 + 0.5 * BEAT, keys(f, BEAT * 1.2, 0.26 if not last else 0.32),
+            pan=-0.12 + 0.12 * k, bus=lead)
+        add(t0 + 2.5 * BEAT, keys(f, BEAT * 0.9, 0.2 if not last else 0.25),
+            pan=0.12 - 0.12 * k, bus=lead)
 
-mix = np.vstack([left, right])[:, :int(DUR * SR)]
+    arp = ARP[b % 4]
+    for k in range(8):
+        add(t0 + k * BEAT / 2, keys(arp[k % 4], BEAT * 0.42,
+                                    0.15 if not last else 0.19),
+            pan=0.26 if k % 2 else -0.26, bus=lead)
 
-# gentle master: soft clip, fade in/out, normalise to about -14 LUFS-ish peak room
-mix = np.tanh(mix * 1.05)
-fade_in = int(0.05 * SR)
-fade_out = int(1.6 * SR)
-mix[:, :fade_in] *= np.linspace(0, 1, fade_in)
-mix[:, -fade_out:] *= np.linspace(1, 0, fade_out) ** 1.5
-mix /= max(1e-9, np.abs(mix).max())
-mix *= 0.89
 
-pcm = (mix.T * 32767).astype(np.int16)
+# a little space, on the melodic bus only
+def reverb(x, taps=((0.037, 0.3), (0.061, 0.22), (0.089, 0.15), (0.127, 0.1))):
+    out = np.zeros_like(x)
+    for d, g in taps:
+        i = int(d * SR)
+        out[i:] += x[: len(x) - i] * g
+    return band(out, high=3800)
+
+
+wet = reverb(lead) * 0.55
+add(0.0, wet, 1.0, pan=-0.34)
+add(0.0, wet, 1.0, pan=0.34)
+
+mix = np.vstack([left, right])[:, : int(DUR * SR)]
+
+# soft-knee limiter: only the last dB, no waveshaping of the body
+peak = np.abs(mix).max()
+if peak > 0.9:
+    over = np.clip(np.abs(mix) - 0.9, 0, None)
+    mix = np.sign(mix) * (np.minimum(np.abs(mix), 0.9) + over / (1 + over / 0.1) * 0.1)
+mix *= 0.86 / max(1e-9, np.abs(mix).max())
+
+fade_in, fade_out = int(0.12 * SR), int(1.8 * SR)
+mix[:, :fade_in] *= np.linspace(0, 1, fade_in) ** 0.6
+mix[:, -fade_out:] *= np.linspace(1, 0, fade_out) ** 1.4
+
 with wave.open(OUT, "w") as w:
     w.setnchannels(2)
     w.setsampwidth(2)
     w.setframerate(SR)
-    w.writeframes(pcm.tobytes())
-print(f"wrote {OUT} ({DUR:.2f}s, {BPM:.0f} bpm)")
+    w.writeframes((mix.T * 32767).astype(np.int16).tobytes())
+print(f"wrote {OUT} ({DUR:.2f}s, {BPM:.0f} bpm, "
+      f"{'four-on-the-floor' if FOUR_ON_FLOOR else 'syncopated'})")

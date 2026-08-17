@@ -6,7 +6,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | Composition | Output | Cut from |
 | --- | --- | --- |
 | **`Reel`** — hair diagnostic, 50 s | `renders/reel-vertical-1080x1920.mp4` | `public/talk.mp4` + `public/barber.mp4` |
-| **`Morning`** — 3 morning mistakes, 45 s | `renders/reel-matin-1080x1920.mp4` | `public/shots/*.mp4` (cropped from the 4K take) |
+| **`Morning`** — 3 morning mistakes, 40 s | `renders/reel-matin-1080x1920.mp4` | `public/shots/*.mp4` (cropped from the 4K take) |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -70,9 +70,12 @@ b-roll.
 This source was a single 3-minute 4K vertical take with the camera mic
 unplugged, so it needed two rescues before editing:
 
-- **Sound.** The voice sat at about −45 dBFS. `scripts/prepare-morning.sh`
-  lifts it 26 dB, denoises, compresses and normalises to −14 LUFS; the result
-  has roughly 37 dB of signal-to-noise, which the music bed covers.
+- **Sound.** The voice sat at about −45 dBFS. `scripts/build-voice.py` lifts it
+  26 dB, denoises, compresses and de-esses, then sets the speech level and caps
+  the peaks in numpy — ffmpeg's `alimiter` did not hold its ceiling in this
+  build (0 dBFS output with `limit=0.80`) and the overshoot clipped once the
+  music was summed on top. The script verifies the encoded file, so a clipping
+  voice track fails the build instead of shipping.
 - **Framing.** 2160×3840 means three different framings can be cropped out of
   the one take at or near native 1080×1920 (`mid`, `med`, `close`), which is
   where the cutting variety comes from. `scripts/cut-shots.py` writes one file
@@ -112,10 +115,15 @@ applies the rotation and tone-maps the HLG/BT.2020 iPhone clip down to SDR,
 splits the speech out to its own track (so cuts trim video and audio in
 lockstep), and renders the music.
 
-The music is synthesised, not licensed: `scripts/music.py` writes a 100 bpm
-Am–F–C–G beat (kick, snare, claps, hats, sub bass, chord stabs, arp, riser and
-impacts) with numpy. `python3 scripts/music.py <seconds> <out.wav>`. The
-transition sweep and the card thump come from `scripts/sfx.py` the same way.
+The music is synthesised, not licensed: `scripts/music.py` writes an Am–F–C–G
+bed with numpy — `python3 scripts/music.py <seconds> <out.wav> [bpm]`, four on
+the floor from 115 bpm up. Its first version crackled, so the engine now follows
+three rules: noise elements are FFT band-limited (raw white noise is what you
+hear as crackle), nothing is tanh-saturated, and every voice has a real attack
+and release. `scripts/check-music.py` enforces that on the output — it measures
+clipping, click-like outliers against the local level, and A-weighted band
+shares, and fails the build on a bed that is noise-dominated or sub-heavy. The
+transition sweep and the card thump come from `scripts/sfx.py`.
 
 Fonts (Anton, Inter) are inlined into `src/fonts.css` as data URIs by
 `python3 scripts/inline-fonts.py`, so no render worker ever waits on a font
