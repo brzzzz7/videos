@@ -5,7 +5,7 @@ Remotion project. Currently one composition: **`Reel`** — a vertical
 
 | | |
 | --- | --- |
-| Output | `out/reel-vertical-1080x1920.mp4` (1080×1920, h264, ~50 s) |
+| Output | `renders/reel-vertical-1080x1920.mp4` (1080×1920, h264, 50 s, 33 MB) — committed |
 | Sources | `public/talk.mp4` (talking head), `public/barber.mp4` (shop b-roll) |
 | Audio | `public/voice.m4a` (speech), `public/room.m4a` (ambience), `public/music.m4a` (beat), `public/whoosh.m4a` + `public/impact.m4a` (transitions) |
 
@@ -15,6 +15,15 @@ Remotion project. Currently one composition: **`Reel`** — a vertical
 npm i
 npm run dev      # Remotion Studio, scrub the edit
 npm run render   # writes out/reel-vertical-1080x1920.mp4
+```
+
+`out/` is gitignored scratch space — copy a cut you want to keep into
+`renders/`, which is committed. For a lighter file to upload from a phone:
+
+```console
+ffmpeg -i renders/reel-vertical-1080x1920.mp4 -c:v libx264 -preset slow -crf 23 \
+  -pix_fmt yuv420p -color_primaries bt709 -color_trc bt709 -colorspace bt709 \
+  -c:a aac -b:a 160k -movflags +faststart reel-light.mp4
 ```
 
 If Remotion can't download its own Chromium (locked-down network), point it at
