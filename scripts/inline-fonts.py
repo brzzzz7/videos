@@ -19,6 +19,8 @@ FACES = [
     ("Inter", 600, "@fontsource/inter/files/inter-latin-600-normal.woff2"),
     ("Inter", 700, "@fontsource/inter/files/inter-latin-700-normal.woff2"),
     ("Inter", 900, "@fontsource/inter/files/inter-latin-900-normal.woff2"),
+    ("Montserrat", 600, "@fontsource/montserrat/files/montserrat-latin-600-normal.woff2"),
+    ("Montserrat", 700, "@fontsource/montserrat/files/montserrat-latin-700-normal.woff2"),
 ]
 
 

@@ -26,6 +26,10 @@ SR = 48000
 DUR = float(sys.argv[1]) if len(sys.argv) > 1 else 60.0
 OUT = sys.argv[2] if len(sys.argv) > 2 else "beat.wav"
 BPM = float(sys.argv[3]) if len(sys.argv) > 3 else 100.0
+# "punchy" (default) is the minor, driving bed; "light" is major, softer, for a
+# reel that should read as friendly and professional rather than hyped.
+MOOD = sys.argv[4] if len(sys.argv) > 4 else "punchy"
+LIGHT = MOOD == "light"
 
 BEAT = 60.0 / BPM
 BAR = 4 * BEAT
@@ -144,8 +148,13 @@ def bass(freq, dur, level=0.30):
 
 
 def keys(freq, dur, level=0.26, detune=0.0015):
-    """Soft electric-piano-ish voice: where the music actually lives."""
+    """Where the music actually lives: electric piano, or marimba when light."""
     n = int(dur * SR)
+    if LIGHT:
+        # wooden, quick decay, no beating between voices
+        sig = tone(freq, n, (1.0, 0.28, 0.14, 0.05))
+        sig = band(sig, low=140, high=5200)
+        return sig * env(n, 0.006, dur * 0.85, hold=dur * 0.04, curve=2.4) * level
     sig = tone(freq, n, (1.0, 0.5, 0.22, 0.09), detune=detune)
     sig += 0.4 * tone(freq * (1 + detune * 4), n, (1.0, 0.3))
     sig = band(sig, low=110, high=4200)
@@ -185,24 +194,39 @@ def note(name, octave):
     return NOTE[name] * 2 ** (octave - 4)
 
 
-# Am - F - C - G, one chord per bar
-PROG = [
-    ("A", 2, [note("A", 3), note("C", 4), note("E", 4)]),
-    ("F", 2, [note("A", 3), note("C", 4), note("F", 4)]),
-    ("C", 3, [note("C", 4), note("E", 4), note("G", 4)]),
-    ("G", 2, [note("B", 3), note("D", 4), note("G", 4)]),
-]
-ARP = [
-    [note("A", 4), note("C", 5), note("E", 4), note("C", 5)],
-    [note("A", 4), note("C", 5), note("F", 4), note("C", 5)],
-    [note("C", 5), note("E", 4), note("G", 4), note("E", 5)],
-    [note("B", 4), note("D", 5), note("G", 4), note("D", 5)],
-]
+# punchy: Am - F - C - G (minor).  light: C - G - Am - F (I - V - vi - IV).
+if LIGHT:
+    PROG = [
+        ("C", 3, [note("E", 4), note("G", 4), note("C", 5)]),
+        ("G", 2, [note("D", 4), note("G", 4), note("B", 4)]),
+        ("A", 2, [note("E", 4), note("A", 4), note("C", 5)]),
+        ("F", 2, [note("F", 4), note("A", 4), note("C", 5)]),
+    ]
+    ARP = [
+        [note("C", 5), note("E", 5), note("G", 4), note("E", 5)],
+        [note("B", 4), note("D", 5), note("G", 4), note("D", 5)],
+        [note("C", 5), note("E", 5), note("A", 4), note("E", 5)],
+        [note("C", 5), note("F", 5), note("A", 4), note("F", 5)],
+    ]
+else:
+    PROG = [
+        ("A", 2, [note("A", 3), note("C", 4), note("E", 4)]),
+        ("F", 2, [note("A", 3), note("C", 4), note("F", 4)]),
+        ("C", 3, [note("C", 4), note("E", 4), note("G", 4)]),
+        ("G", 2, [note("B", 3), note("D", 4), note("G", 4)]),
+    ]
+    ARP = [
+        [note("A", 4), note("C", 5), note("E", 4), note("C", 5)],
+        [note("A", 4), note("C", 5), note("F", 4), note("C", 5)],
+        [note("C", 5), note("E", 4), note("G", 4), note("E", 5)],
+        [note("B", 4), note("D", 5), note("G", 4), note("D", 5)],
+    ]
 
 bars = int(np.ceil(DUR / BAR)) + 1
 lead = np.zeros(L)
 
-add(0.0, sweep(BAR * 0.8), 0.7)
+if not LIGHT:
+    add(0.0, sweep(BAR * 0.8), 0.7)
 
 for b in range(bars):
     t0 = b * BAR
@@ -211,7 +235,11 @@ for b in range(bars):
     playing = t0 > BAR * 0.45
     last = t0 > DUR - BAR * 2
 
-    if FOUR_ON_FLOOR:
+    if LIGHT:
+        for off in (0.0, 2.0):
+            add(t0 + off * BEAT, kick(0.3))
+        add(t0 + 2.5 * BEAT, kick(0.16))
+    elif FOUR_ON_FLOOR:
         for k in range(4):
             add(t0 + k * BEAT, kick(0.42 if k == 0 else 0.35))
     else:
@@ -221,22 +249,33 @@ for b in range(bars):
     if not playing:
         continue
 
-    add(t0 + 1 * BEAT, snare(), pan=-0.05)
-    add(t0 + 3 * BEAT, clap(), pan=0.06)
+    if LIGHT:
+        add(t0 + 1 * BEAT, clap(0.16), pan=-0.06)
+        add(t0 + 3 * BEAT, clap(0.16), pan=0.06)
+    else:
+        add(t0 + 1 * BEAT, snare(), pan=-0.05)
+        add(t0 + 3 * BEAT, clap(), pan=0.06)
 
     for k in range(8):
         p = t0 + k * BEAT / 2
-        add(p, shaker(0.42 if k % 2 == 0 else 0.27), pan=0.2)
+        if LIGHT:
+            add(p, shaker(0.2 if k % 2 == 0 else 0.13), pan=0.22)
+        else:
+            add(p, shaker(0.42 if k % 2 == 0 else 0.27), pan=0.2)
     if FOUR_ON_FLOOR:
         for off in (0.5, 1.5, 2.5, 3.5):
             add(t0 + off * BEAT, shaker(0.17, open_=True), pan=-0.22)
     if b % 4 == 3:
         add(t0 + 3.5 * BEAT, shaker(0.22, open_=True), pan=0.24)
 
-    add(t0, bass(root, BEAT * 1.35), 1.0)
-    add(t0 + 1.5 * BEAT, bass(root, BEAT * 0.45), 0.85)
-    add(t0 + 2.0 * BEAT, bass(root * 1.5, BEAT * 0.45), 0.6)
-    add(t0 + 3.5 * BEAT, bass(root, BEAT * 0.45), 0.8)
+    if LIGHT:
+        add(t0, bass(root, BEAT * 1.6), 0.85)
+        add(t0 + 2.0 * BEAT, bass(root, BEAT * 1.2), 0.7)
+    else:
+        add(t0, bass(root, BEAT * 1.35), 1.0)
+        add(t0 + 1.5 * BEAT, bass(root, BEAT * 0.45), 0.85)
+        add(t0 + 2.0 * BEAT, bass(root * 1.5, BEAT * 0.45), 0.6)
+        add(t0 + 3.5 * BEAT, bass(root, BEAT * 0.45), 0.8)
 
     add(t0, pad(chord, BAR * 1.05, 0.15 if not last else 0.19), 1.0, bus=lead)
     for k, f in enumerate(chord):
@@ -283,5 +322,5 @@ with wave.open(OUT, "w") as w:
     w.setsampwidth(2)
     w.setframerate(SR)
     w.writeframes((mix.T * 32767).astype(np.int16).tobytes())
-print(f"wrote {OUT} ({DUR:.2f}s, {BPM:.0f} bpm, "
-      f"{'four-on-the-floor' if FOUR_ON_FLOOR else 'syncopated'})")
+pattern = "light" if LIGHT else ("four-on-the-floor" if FOUR_ON_FLOOR else "syncopated")
+print(f"wrote {OUT} ({DUR:.2f}s, {BPM:.0f} bpm, {pattern})")

@@ -25,13 +25,25 @@ SR = 48000
 SPEECH_TARGET_DBFS = -10.0   # RMS of the loud half of the speech
 PEAK_CEILING = 0.80          # leaves ~2 dB for the music sum and AAC overshoot
 
-CHAIN = (
-    "volume=26dB,"           # the recording sits ~26 dB too low
-    "highpass=f=95,"
-    "afftdn=nr=22:nf=-36,"   # broadband hiss from the lift
-    "acompressor=threshold=-20dB:ratio=4:attack=6:release=160,"
-    "deesser=i=0.25"
-)
+# Two recordings, two starting points: the camera-mic take needed a 26 dB lift
+# and heavy denoising, a normally-recorded take only needs de-rumbling.
+CHAINS = {
+    "rescue": (
+        "volume=26dB,"
+        "highpass=f=95,"
+        "afftdn=nr=22:nf=-36,"
+        "acompressor=threshold=-20dB:ratio=4:attack=6:release=160,"
+        "deesser=i=0.25"
+    ),
+    "clean": (
+        "highpass=f=110,"                 # room rumble only
+        "afftdn=nr=10:nf=-45,"
+        "acompressor=threshold=-22dB:ratio=3:attack=8:release=180,"
+        "deesser=i=0.2"
+    ),
+}
+MODE = os.environ.get("VOICE_MODE", "rescue")
+CHAIN = CHAINS[MODE]
 
 
 def decode():
@@ -80,6 +92,7 @@ def limit(x, ceiling, block=0.001, release=0.08):
 def main():
     if not SRC:
         sys.exit("usage: build-voice.py <source.mp4> <out.m4a> [ffmpeg]")
+    print(f"  chain: {MODE}")
     x = decode()
     before = speech_level(x)
     x *= 10 ** (SPEECH_TARGET_DBFS / 20) / max(before, 1e-9)

@@ -5,3 +5,4 @@ import "./fonts.css";
 
 export const DISPLAY = "Anton";
 export const UI = "Inter";
+export const SANS = "Montserrat";

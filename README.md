@@ -7,6 +7,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | --- | --- | --- |
 | **`Reel`** — hair diagnostic, 50 s | `renders/reel-vertical-1080x1920.mp4` | `public/talk.mp4` + `public/barber.mp4` |
 | **`Morning`** — 3 morning mistakes, 40 s | `renders/reel-matin-1080x1920.mp4` | `public/shots/*.mp4` (cropped from the 4K take) |
+| **`Split`** — same script, split-screen, 63 s | `renders/reel-split-1080x1920.mp4` | `public/talk3.mp4` (derushed take) |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -15,6 +16,7 @@ cross-dissolves for `Morning`.
 | --- | --- |
 | Audio (Reel) | `voice.m4a` (speech), `room.m4a` (ambience), `music.m4a` (100 bpm beat) |
 | Audio (Morning) | `morning-voice.m4a` (speech, recovered from a −45 dBFS camera track), `morning-music.m4a` (124 bpm beat) |
+| Audio (Split) | `voice3.m4a` (speech), `music-light.m4a` (104 bpm major bed), `sfx/*.m4a` (six light cue sounds) |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
 
 ## Commands
@@ -87,6 +89,30 @@ unplugged, so it needed two rescues before editing:
 
 `src/data/morning.ts` holds the copy (one entry per shot, hook, end card) and
 `src/morning.ts` assembles clips, captions, section labels and the dissolves.
+
+### `Split` — the illustrated version
+
+The take arrived already derushed, so nothing is cut: the reel runs the clip end
+to end and only adds layers.
+
+- **Split screen.** On the statements worth illustrating, the picture drops to
+  the bottom half and an illustration panel opens above it. The picture window
+  slides down to `BOTTOM_WINDOW_TOP` at the same time, so his face stays framed
+  in that half instead of being cropped at the chin. Between cues the frame is
+  full again — a permanent split turns into wallpaper.
+- **Illustrations** are motion design, not stock: a counter, humidity gauges, a
+  strand that loses its shape, a wash → dry → style timeline with the product in
+  the wrong then the right place, the three products, the matte-wax exception,
+  dose per day, and the CTA card over the barbershop b-roll
+  (`components/illos/`).
+- **Cue sounds** come from `scripts/sfx-light.py` — six distinct light sounds,
+  each checked by `scripts/check-music.py`. `src/split.ts` throws if two
+  consecutive cues would use the same one, or if two cues overlap.
+- **Captions** are Montserrat 700, white, with a light shadow
+  (`components/CaptionsMontserrat.tsx`).
+
+The source is 608×1080, so it is upscaled to 1080×1920 with lanczos and a light
+unsharp — that is as sharp as this take can get.
 
 ## What is on screen
 
