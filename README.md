@@ -1,20 +1,29 @@
 # videos
 
-Remotion project. Currently one composition: **`Reel`** — a vertical
-1080×1920 / 30 fps reel cut from two clips of the barbershop shoot.
+Remotion project. Two vertical 1080×1920 / 30 fps reels cut from the barbershop
+shoot, both driven by data rather than a hand-placed timeline.
+
+| Composition | Output | Cut from |
+| --- | --- | --- |
+| **`Reel`** — hair diagnostic, 50 s | `renders/reel-vertical-1080x1920.mp4` | `public/talk.mp4` + `public/barber.mp4` |
+| **`Morning`** — 3 morning mistakes, 45 s | `renders/reel-matin-1080x1920.mp4` | `public/shots/*.mp4` (cropped from the 4K take) |
+
+Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
+cross-dissolves for `Morning`.
 
 | | |
 | --- | --- |
-| Output | `renders/reel-vertical-1080x1920.mp4` (1080×1920, h264, 50 s, 33 MB) — committed |
-| Sources | `public/talk.mp4` (talking head), `public/barber.mp4` (shop b-roll) |
-| Audio | `public/voice.m4a` (speech), `public/room.m4a` (ambience), `public/music.m4a` (beat), `public/whoosh.m4a` + `public/impact.m4a` (transitions) |
+| Audio (Reel) | `voice.m4a` (speech), `room.m4a` (ambience), `music.m4a` (100 bpm beat) |
+| Audio (Morning) | `morning-voice.m4a` (speech, recovered from a −45 dBFS camera track), `morning-music.m4a` (124 bpm beat) |
+| Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
 
 ## Commands
 
 ```console
 npm i
-npm run dev      # Remotion Studio, scrub the edit
-npm run render   # writes out/reel-vertical-1080x1920.mp4
+npm run dev              # Remotion Studio, scrub either edit
+npm run render           # Reel    -> out/reel-vertical-1080x1920.mp4
+npm run render:morning   # Morning -> out/reel-matin-1080x1920.mp4
 ```
 
 `out/` is gitignored scratch space — copy a cut you want to keep into
@@ -33,10 +42,15 @@ an existing one:
 REMOTION_BROWSER=/path/to/chrome npm run render
 ```
 
-## How the edit is built
+## How the edits are built
 
-The edit is data, not a hand-placed timeline — `src/timeline.ts` derives
-everything in frames from two files:
+Both reels share `src/lib/captions.ts`: word timings are spread inside each
+phrase by syllable weight, so drift can never cross a pause, and lines are
+grouped into caption cards.
+
+### `Reel` — the diagnostic
+
+`src/timeline.ts` derives everything in frames from two files:
 
 - **`src/data/spans.json`** — the jump-cut list. Generated from the silence map
   of the voice track: every pause longer than 0.3 s is tightened to a 0.1 s
@@ -51,6 +65,26 @@ are spread across each phrase by syllable weight, so drift stays inside a
 phrase), the chapter card frames, and the frame where the reel cuts away to the
 b-roll.
 
+### `Morning` — the 3 mistakes
+
+This source was a single 3-minute 4K vertical take with the camera mic
+unplugged, so it needed two rescues before editing:
+
+- **Sound.** The voice sat at about −45 dBFS. `scripts/prepare-morning.sh`
+  lifts it 26 dB, denoises, compresses and normalises to −14 LUFS; the result
+  has roughly 37 dB of signal-to-noise, which the music bed covers.
+- **Framing.** 2160×3840 means three different framings can be cropped out of
+  the one take at or near native 1080×1920 (`mid`, `med`, `close`), which is
+  where the cutting variety comes from. `scripts/cut-shots.py` writes one file
+  per shot plus 8 handle frames at each end — those handles are what pay for
+  the cross-dissolves.
+- Where he leans out of frame mid-sentence, a shot borrows its picture from
+  another moment of the same take (`pictureStart` in the manifest) while
+  keeping the original voice. `scripts/presence.py` finds those moments.
+
+`src/data/morning.ts` holds the copy (one entry per shot, hook, end card) and
+`src/morning.ts` assembles clips, captions, section labels and the dissolves.
+
 ## What is on screen
 
 | Layer | File | Notes |
@@ -62,6 +96,10 @@ b-roll.
 | HUD | `components/Hud.tsx` | Progress bar, chapter dots, current-point pill. Fades out at the cutaway. |
 | End card | `components/Cta.tsx` | Over the b-roll, after the voice-over: “Prends ton RDV”. |
 | Texture | `components/Backdrop.tsx`, `components/Grain.tsx` | Animated backdrop behind framed-down shots, film grain, vignette. |
+
+For `Morning`: `components/CaptionsApple.tsx` (semibold sentence case, soft
+shadow, words a frame apart), and `MorningReel.tsx` for the title, the
+"Erreur 01" tags, the dissolving shot track and the end card.
 
 Colours and safe areas live in `src/theme.ts` — `safe.bottom` keeps the
 subtitles clear of Instagram's chrome.

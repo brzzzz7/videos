@@ -6,12 +6,14 @@ import wave
 import numpy as np
 
 SR = 48000
-BPM = 100.0
+# tempo: 3rd argument, e.g. `python3 scripts/music.py 55 beat.wav 124`
+BPM = float(sys.argv[3]) if len(sys.argv) > 3 else 100.0
 BEAT = 60.0 / BPM          # 0.6 s
 BAR = 4 * BEAT             # 2.4 s
 DUR = float(sys.argv[1]) if len(sys.argv) > 1 else 60.0
 OUT = sys.argv[2] if len(sys.argv) > 2 else "beat.wav"
 
+FOUR_ON_FLOOR = BPM >= 115
 rng = np.random.default_rng(7)
 L = int(DUR * SR) + SR
 left = np.zeros(L)
@@ -185,16 +187,25 @@ for b in range(n_bars):
     section_in = t0 > BAR * 0.5            # groove starts after the intro bar
     late = t0 > DUR - BAR * 2              # last two bars: CTA lift
 
-    # kick pattern (trap-ish, syncopated)
-    for off in (0.0, 1.5, 2.0, 3.5):
-        add(None, t0 + off * BEAT, kick(), 0.9)
-    if b % 4 == 3:
-        add(None, t0 + 2.75 * BEAT, kick(), 0.7)
+    # fast tempos get a four-on-the-floor pulse, slower ones a trap pattern
+    if FOUR_ON_FLOOR:
+        for off in (0.0, 1.0, 2.0, 3.0):
+            add(None, t0 + off * BEAT, kick(), 0.92)
+        if b % 4 == 3:
+            add(None, t0 + 3.5 * BEAT, kick(), 0.6)
+    else:
+        for off in (0.0, 1.5, 2.0, 3.5):
+            add(None, t0 + off * BEAT, kick(), 0.9)
+        if b % 4 == 3:
+            add(None, t0 + 2.75 * BEAT, kick(), 0.7)
 
     if section_in:
         # backbeat
         add(None, t0 + 1 * BEAT, snare(), 0.55, pan=-0.05)
         add(None, t0 + 3 * BEAT, clap(), 0.6, pan=0.05)
+        if FOUR_ON_FLOOR:
+            for off in (0.5, 1.5, 2.5, 3.5):
+                add(None, t0 + off * BEAT, hat(dur=0.16, open_=True), 0.22, pan=-0.2)
         # hats: 8ths with 16th rolls
         for i in range(8):
             p = t0 + i * BEAT / 2

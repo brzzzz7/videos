@@ -16,6 +16,7 @@ OUT = os.path.join(ROOT, "src", "fonts.css")
 FACES = [
     ("Anton", 400, "@fontsource/anton/files/anton-latin-400-normal.woff2"),
     ("Anton", 400, "@fontsource/anton/files/anton-latin-ext-400-normal.woff2"),
+    ("Inter", 600, "@fontsource/inter/files/inter-latin-600-normal.woff2"),
     ("Inter", 700, "@fontsource/inter/files/inter-latin-700-normal.woff2"),
     ("Inter", 900, "@fontsource/inter/files/inter-latin-900-normal.woff2"),
 ]

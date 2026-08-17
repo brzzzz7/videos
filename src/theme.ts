@@ -4,6 +4,8 @@ export const theme = {
   gold: "#FFC53D",
   goldDeep: "#F59E00",
   punch: "#FF4D3D",
+  /** warm accent picked from the lens flare in the second reel */
+  warm: "#FFD9A0",
   mute: "rgba(255,255,255,0.55)",
   // Instagram's chrome eats the bottom ~330px and the right ~180px of a reel.
   safe: { bottom: 330, top: 120, side: 72 },
