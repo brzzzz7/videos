@@ -22,8 +22,14 @@ export const totalFrames = Math.round(SOURCE_DURATION * FPS);
 
 /** Geometry of the split: the picture keeps the bottom half. */
 export const SPLIT_LINE = 960;
-/** Where the bottom-half window starts in the source frame (his head sits low). */
-export const BOTTOM_WINDOW_TOP = 620;
+/**
+ * Which rows of the source fill the bottom half: he sits low in the frame, so
+ * the window starts here and runs 960 px down. The value is a compromise —
+ * lower and he is centred but the captions land on his mouth, higher and he
+ * drifts to the top of the half. Here his face sits in the middle of the half
+ * with the captions clear of it, on his collar.
+ */
+export const BOTTOM_WINDOW_TOP = 680;
 export const SPLIT_FRAMES = 9;
 
 const secondsToFrame = (seconds: number) => Math.round(seconds * FPS);

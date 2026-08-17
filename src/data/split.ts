@@ -52,7 +52,7 @@ export type Illo =
   | { kind: "counter" }
   | { kind: "gauge"; from: number; to: number; caption: string; title?: string; danger?: boolean }
   | { kind: "strand" }
-  | { kind: "timeline"; good: boolean }
+  | { kind: "timeline"; good: boolean; moveAt?: number }
   | { kind: "products" }
   | { kind: "matte" }
   | { kind: "doses" }
@@ -70,27 +70,21 @@ export type Cue = {
 };
 
 /**
- * The screen only splits on the statements worth illustrating; the rest of the
- * time the picture is full frame, which keeps the split from going wallpaper.
+ * The screen only splits on the statements worth illustrating, and it stays open
+ * long enough to be read: six panels over a minute, not one per sentence. The
+ * first version changed panel every three seconds and read as bouncing.
  */
 export const cues: Cue[] = [
-  { at: 0.6, until: 4.0, illo: { kind: "counter" }, sfx: "pop" },
+  { at: 0.6, until: 4.2, illo: { kind: "counter" }, sfx: "pop" },
   {
-    at: 4.2,
-    until: 7.0,
-    illo: { kind: "gauge", from: 20, to: 100, caption: "cheveux encore trempés", title: "erreur 01", danger: true },
-    sfx: "swoosh",
-  },
-  { at: 7.2, until: 10.3, illo: { kind: "strand" }, sfx: "marimba" },
-  {
-    at: 10.4,
-    until: 12.7,
-    illo: { kind: "gauge", from: 100, to: 80, caption: "sèche-les à 80% avant de coiffer" },
+    at: 9.9,
+    until: 12.9,
+    illo: { kind: "gauge", from: 100, to: 80, caption: "sèche-les à 80% avant de coiffer", title: "erreur 01" },
     sfx: "chime",
   },
-  { at: 13.2, until: 16.2, illo: { kind: "timeline", good: false }, sfx: "tick" },
-  { at: 16.6, until: 19.6, illo: { kind: "products" }, sfx: "marimba" },
-  { at: 19.8, until: 23.5, illo: { kind: "timeline", good: true }, sfx: "swoosh" },
+  // one panel for the whole of mistake 2: the product marker starts at the
+  // wrong end of the routine and slides to the right one when he says it
+  { at: 13.0, until: 23.4, illo: { kind: "timeline", good: false, moveAt: 180 }, sfx: "swoosh" },
   { at: 31.8, until: 37.9, illo: { kind: "matte" }, sfx: "pop" },
   { at: 44.3, until: 53.4, illo: { kind: "doses" }, sfx: "chime" },
   { at: 57.9, until: 63.13, illo: { kind: "cta" }, sfx: "lift" },

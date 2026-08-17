@@ -55,7 +55,7 @@ const Illustration: React.FC<{ illo: Illo }> = ({ illo }) => {
     case "strand":
       return <Strand />;
     case "timeline":
-      return <Timeline good={illo.good} />;
+      return <Timeline good={illo.good} moveAt={illo.moveAt} />;
     case "products":
       return <Products />;
     case "matte":
@@ -76,7 +76,11 @@ const Stage: React.FC = () => {
   const frame = useCurrentFrame();
   const open = splitAt(frame);
   const clipTop = SPLIT_LINE * open;
-  const videoTop = BOTTOM_WINDOW_TOP * open;
+  // The window must show source rows BOTTOM_WINDOW_TOP..+960 inside the bottom
+  // half, so the picture's top edge sits at (SPLIT_LINE - BOTTOM_WINDOW_TOP).
+  // Offsetting by BOTTOM_WINDOW_TOP instead showed rows 340..1300 — his face
+  // pushed to the bottom of the half and cropped at the chin.
+  const videoTop = (SPLIT_LINE - BOTTOM_WINDOW_TOP) * open;
 
   return (
     <div
@@ -181,7 +185,7 @@ export const SplitReel: React.FC = () => {
       </AbsoluteFill>
 
       <AbsoluteFill style={{ zIndex: 60 }}>
-        <CaptionsMontserrat lines={lines} size={62} bottom={340} />
+        <CaptionsMontserrat lines={lines} size={62} bottom={300} />
       </AbsoluteFill>
 
       {/* ------------------------------------------------------------ audio */}

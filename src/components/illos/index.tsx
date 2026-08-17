@@ -153,16 +153,27 @@ export const Strand: React.FC = () => {
 };
 
 /** Wash → dry → style, with the product marker in the right or wrong place. */
-export const Timeline: React.FC<{ good: boolean }> = ({ good }) => {
+export const Timeline: React.FC<{ good: boolean; moveAt?: number }> = ({
+  good,
+  moveAt,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const steps = ["lavage", "séchage", "coiffage"];
-  const at = good ? 1 : 2;
-  const move = spring({ frame: frame - 14, fps, config: { damping: 20, stiffness: 110 } });
-  const x = 150 + at * 250;
+
+  // with moveAt the panel tells the whole story: wrong end first, then it slides
+  const moved = moveAt === undefined ? good : frame >= moveAt;
+  const slide =
+    moveAt === undefined
+      ? 1
+      : spring({ frame: frame - moveAt, fps, config: { damping: 18, stiffness: 90 } });
+  const at = moved ? 1 : 2;
+  const appear = spring({ frame: frame - 14, fps, config: { damping: 20, stiffness: 110 } });
+  const x = moveAt === undefined ? 150 + at * 250 : 650 - slide * 250;
+  const colour = moved ? theme.warm : "#FF6B5A";
 
   return (
-    <IlloFrame title={good ? "le bon moment" : "trop tard"}>
+    <IlloFrame title={moved ? "le bon moment" : "trop tard"}>
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
         <svg width="820" height="260" viewBox="0 0 820 260">
           <line x1="150" y1="170" x2="650" y2="170" stroke="rgba(255,255,255,0.2)" strokeWidth="6" strokeLinecap="round" />
@@ -170,7 +181,7 @@ export const Timeline: React.FC<{ good: boolean }> = ({ good }) => {
             <g key={s}>
               <circle
                 cx={150 + i * 250} cy="170" r="18"
-                fill={i === at ? (good ? theme.warm : "#FF6B5A") : "rgba(255,255,255,0.25)"}
+                fill={i === at ? colour : "rgba(255,255,255,0.25)"}
               />
               <text
                 x={150 + i * 250} y="224" textAnchor="middle"
@@ -180,13 +191,13 @@ export const Timeline: React.FC<{ good: boolean }> = ({ good }) => {
               </text>
             </g>
           ))}
-          <g transform={`translate(${x}, ${112 - move * 18}) scale(${0.8 + move * 0.2})`} opacity={move}>
+          <g transform={`translate(${x}, ${112 - appear * 18}) scale(${0.8 + appear * 0.2})`} opacity={appear}>
             <rect x="-34" y="-46" width="68" height="52" rx="12" fill={theme.paper} />
             <rect x="-18" y="-58" width="36" height="14" rx="6" fill="rgba(255,255,255,0.65)" />
           </g>
         </svg>
         <div style={{ ...label(36, 600), marginTop: 4, textAlign: "center", maxWidth: 780 }}>
-          {good ? "produit sur cheveux humides" : "produit à la toute fin"}
+          {moved ? "produit sur cheveux humides" : "produit à la toute fin"}
         </div>
       </AbsoluteFill>
     </IlloFrame>
