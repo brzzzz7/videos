@@ -1,55 +1,81 @@
 # videos
 
+Remotion project. Currently one composition: **`Reel`** — a vertical
+1080×1920 / 30 fps reel cut from two clips of the barbershop shoot.
 
-<p align="center">
-  <a href="https://github.com/remotion-dev/logo">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-dark.apng">
-      <img alt="Animated Remotion Logo" src="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-light.gif">
-    </picture>
-  </a>
-</p>
-
-Welcome to your Remotion project!
+| | |
+| --- | --- |
+| Output | `out/reel-vertical-1080x1920.mp4` (1080×1920, h264, ~50 s) |
+| Sources | `public/talk.mp4` (talking head), `public/barber.mp4` (shop b-roll) |
+| Audio | `public/voice.m4a` (speech), `public/room.m4a` (ambience), `public/music.m4a` (beat), `public/whoosh.m4a` + `public/impact.m4a` (transitions) |
 
 ## Commands
 
-**Install Dependencies**
-
 ```console
 npm i
+npm run dev      # Remotion Studio, scrub the edit
+npm run render   # writes out/reel-vertical-1080x1920.mp4
 ```
 
-**Start Preview**
+If Remotion can't download its own Chromium (locked-down network), point it at
+an existing one:
 
 ```console
-npm run dev
+REMOTION_BROWSER=/path/to/chrome npm run render
 ```
 
-**Render video**
+## How the edit is built
 
-```console
-npx remotion render
-```
+The edit is data, not a hand-placed timeline — `src/timeline.ts` derives
+everything in frames from two files:
 
-**Upgrade Remotion**
+- **`src/data/spans.json`** — the jump-cut list. Generated from the silence map
+  of the voice track: every pause longer than 0.3 s is tightened to a 0.1 s
+  breath, which is what removes 4.4 s of dead air and gives the reel its pace.
+  Regenerate with `python3 scripts/build_spans.py <ffmpeg>`.
+- **`src/data/script.ts`** — the transcript, anchored to source timestamps, plus
+  the hook copy, the chapter labels, the emphasised words and the CTA copy.
+  This is the file to edit for wording changes.
 
-```console
-npx remotion upgrade
-```
+From those, `timeline.ts` produces the clips, per-word subtitle timings (words
+are spread across each phrase by syllable weight, so drift stays inside a
+phrase), the chapter card frames, and the frame where the reel cuts away to the
+b-roll.
 
-## Docs
+## What is on screen
 
-Get started with Remotion by reading the [fundamentals page](https://www.remotion.dev/docs/the-fundamentals).
+| Layer | File | Notes |
+| --- | --- | --- |
+| Hook | `components/Hook.tsx` | First 2.2 s: “En 2 secondes / je sais tout / sur tes cheveux”. Subtitles stay hidden until it clears. |
+| Footage | `components/VideoTrack.tsx` | Jump cuts, alternating zoom levels, a spring kick on every cut and phrase start, framed-down state during chapter cards, then the barbershop b-roll. |
+| Subtitles | `components/Subtitles.tsx` | Anton, uppercase, 2–3 words per line, black stroke, gold marker swipe on the word being said. |
+| Chapter cards | `components/ChapterCard.tsx` | The “01 — Le cuir chevelu” band that slams in on each of his four points. |
+| HUD | `components/Hud.tsx` | Progress bar, chapter dots, current-point pill. Fades out at the cutaway. |
+| End card | `components/Cta.tsx` | Over the b-roll, after the voice-over: “Prends ton RDV”. |
+| Texture | `components/Backdrop.tsx`, `components/Grain.tsx` | Animated backdrop behind framed-down shots, film grain, vignette. |
 
-## Help
+Colours and safe areas live in `src/theme.ts` — `safe.bottom` keeps the
+subtitles clear of Instagram's chrome.
 
-We provide help on our [Discord server](https://discord.gg/6VzzNDwUwV).
+## Assets
 
-## Issues
+`scripts/prepare-assets.sh <talking-head> <barbershop> [ffmpeg]` rebuilds
+everything in `public/` from the camera originals: scales/pads the talking head,
+applies the rotation and tone-maps the HLG/BT.2020 iPhone clip down to SDR,
+splits the speech out to its own track (so cuts trim video and audio in
+lockstep), and renders the music.
 
-Found an issue with Remotion? [File an issue here](https://github.com/remotion-dev/remotion/issues/new).
+The music is synthesised, not licensed: `scripts/music.py` writes a 100 bpm
+Am–F–C–G beat (kick, snare, claps, hats, sub bass, chord stabs, arp, riser and
+impacts) with numpy. `python3 scripts/music.py <seconds> <out.wav>`. The
+transition sweep and the card thump come from `scripts/sfx.py` the same way.
 
-## License
+Fonts (Anton, Inter) are inlined into `src/fonts.css` as data URIs by
+`python3 scripts/inline-fonts.py`, so no render worker ever waits on a font
+request — re-run it if you change the faces in `scripts/inline-fonts.py`.
 
-Note that for some entities a company license is needed. [Read the terms here](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
+## Subtitles are auto-transcribed
+
+The French transcript came from whisper and was cleaned by hand — worth a
+proof-read before posting. Everything is in `src/data/script.ts`; the timings
+follow the text automatically.
