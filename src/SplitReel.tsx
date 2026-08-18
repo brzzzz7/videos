@@ -5,12 +5,15 @@ import {
   interpolate,
   OffthreadVideo,
   Sequence,
+  spring,
   staticFile,
   useCurrentFrame,
+  useVideoConfig,
 } from "remotion";
 
 import "./fonts";
 import { CaptionsMontserrat } from "./components/CaptionsMontserrat";
+import { SANS } from "./fonts";
 import { Grain, Vignette } from "./components/Grain";
 import {
   Counter,
@@ -24,6 +27,7 @@ import {
 } from "./components/illos";
 import { ramp } from "./lib/audio";
 import type { Illo } from "./data/split";
+import { hook } from "./data/split";
 import {
   BOTTOM_WINDOW_TOP,
   ctaFrame,
@@ -171,6 +175,94 @@ const IlloFade: React.FC<{ length: number; children: React.ReactNode }> = ({
   return <AbsoluteFill style={{ opacity: alpha }}>{children}</AbsoluteFill>;
 };
 
+export const HOOK_FRAMES = 66;   // 2.2 s
+
+/**
+ * Opening promise, over the first two seconds. It sits across the split line
+ * with a scrim on the whole frame, so the panel and the facecam both dim behind
+ * it; captions wait until it has left.
+ */
+const HookCard: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const enter = spring({
+    frame,
+    fps,
+    config: { damping: 20, stiffness: 120, mass: 0.7 },
+  });
+  const out = interpolate(frame, [HOOK_FRAMES - 12, HOOK_FRAMES], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const alpha = enter * (1 - out);
+
+  return (
+    <AbsoluteFill style={{ zIndex: 65 }}>
+      <AbsoluteFill
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(8,8,10,0.6) 0%, rgba(8,8,10,0.42) 45%, rgba(8,8,10,0.66) 100%)",
+          opacity: 1 - out,
+        }}
+      />
+      <AbsoluteFill
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          paddingLeft: 84,
+          paddingRight: 84,
+          transform: `translateY(${(1 - enter) * 26 - out * 20}px) scale(${
+            0.94 + enter * 0.06 + out * 0.03
+          })`,
+          opacity: alpha,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: SANS,
+            fontWeight: 700,
+            fontSize: 138,
+            lineHeight: 1,
+            letterSpacing: -4,
+            color: theme.paper,
+            textShadow: "0 4px 18px rgba(0,0,0,0.5)",
+          }}
+        >
+          {hook.big}
+        </div>
+        <div
+          style={{
+            marginTop: 20,
+            width: 260,
+            height: 8,
+            borderRadius: 999,
+            background: theme.warm,
+            transform: `scaleX(${interpolate(frame, [8, 22], [0, 1], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            })})`,
+          }}
+        />
+        <div
+          style={{
+            marginTop: 26,
+            fontFamily: SANS,
+            fontWeight: 600,
+            fontSize: 52,
+            letterSpacing: -0.8,
+            color: "rgba(255,255,255,0.92)",
+            textAlign: "center",
+            textShadow: "0 2px 12px rgba(0,0,0,0.45)",
+          }}
+        >
+          {hook.small}
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
 export const SplitReel: React.FC = () => {
   const frame = useCurrentFrame();
 
@@ -185,8 +277,17 @@ export const SplitReel: React.FC = () => {
       </AbsoluteFill>
 
       <AbsoluteFill style={{ zIndex: 60 }}>
-        <CaptionsMontserrat lines={lines} size={62} bottom={300} />
+        <CaptionsMontserrat
+          lines={lines}
+          size={62}
+          bottom={300}
+          hideBefore={HOOK_FRAMES}
+        />
       </AbsoluteFill>
+
+      <Sequence durationInFrames={HOOK_FRAMES} layout="none">
+        <HookCard />
+      </Sequence>
 
       {/* ------------------------------------------------------------ audio */}
       <Audio src={staticFile("voice3.m4a")} volume={1} />
