@@ -30,6 +30,7 @@
     "render": "remotion render src/index.ts Reel out/reel-vertical-1080x1920.mp4 --codec=h264 --crf=18 --jpeg-quality=95",
     "render:morning": "remotion render src/index.ts Morning out/reel-matin-1080x1920.mp4 --codec=h264 --crf=21 --jpeg-quality=95 --color-space=bt709",
     "render:split": "remotion render src/index.ts Split out/reel-split-1080x1920.mp4 --codec=h264 --crf=21 --jpeg-quality=95 --color-space=bt709",
+    "render:solutions": "remotion render src/index.ts Solutions out/reel-solutions-1080x1920.mp4 --codec=h264 --crf=21 --jpeg-quality=95 --color-space=bt709",
     "still": "remotion still src/index.ts Reel out/frame.png",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc"

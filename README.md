@@ -8,6 +8,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Reel`** — hair diagnostic, 50 s | `renders/reel-vertical-1080x1920.mp4` | `public/talk.mp4` + `public/barber.mp4` |
 | **`Morning`** — 3 morning mistakes, 40 s | `renders/reel-matin-1080x1920.mp4` | `public/shots/*.mp4` (cropped from the 4K take) |
 | **`Split`** — same script, split-screen, 63 s | `renders/reel-split-1080x1920.mp4` | `public/talk3.mp4` (derushed take) |
+| **`Solutions`** — hair loss, 73 s | `renders/reel-solutions-1080x1920.mp4` | a voice recording + `public/cta-chair.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -113,6 +114,27 @@ to end and only adds layers.
 
 The source is 608×1080, so it is upscaled to 1080×1920 with lanczos and a light
 unsharp — that is as sharp as this take can get.
+
+### `Solutions` — voice-over only
+
+This one arrived as an audio recording with no camera, so there is no facecam to
+fall back on and no footage to keep in sync:
+
+- **Pauses were tightened freely** — `scripts/build-spans-voice.py` cuts anything
+  over 0.45 s down to 0.2 s and drops spans that hold no speech at all (it
+  measures each span against the file's speech level, which is how the breath
+  before the first word gets removed). 18 s of dead air went, 88 s to 70 s.
+  Point it at the raw recording, not the processed voice: `build-voice.py` lifts
+  the floor ~17 dB and hides most pauses from `silencedetect`.
+- **Seven full-frame scenes** run back to back and carry the whole picture
+  (`components/illos/solutions.tsx`): the three numbered cards, the marketing
+  promises struck through, minoxidil applied to a scalp diagram with a
+  "you stop / it stops" card, finasteride blocking DHT before the follicle, the
+  graft moving follicles from the donor band, the medical reminder split into
+  "me: upkeep and style / the doctor: the diagnosis", and the CTA over the
+  barber-chair clip with a pulsing ring.
+- Cue sounds fire on each scene **and** on the beats inside the long ones;
+  `src/solutions.ts` throws if any two consecutive sounds match.
 
 ## What is on screen
 
