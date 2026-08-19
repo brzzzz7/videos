@@ -219,14 +219,15 @@ export const SolutionsReel: React.FC = () => {
       ))}
 
       <Audio
-        src={staticFile("music-light.m4a")}
+        src={staticFile("music-suspense.m4a")}
         volume={(f) =>
+          // the bed builds on its own, so it can sit lower under the voice
           ramp(f, [
-            [0, 0.2],
-            [26, 0.085],
+            [0, 0.22],
+            [26, 0.1],
             [ctaFrame - 24, 0.1],
-            [ctaFrame + 14, 0.26],
-            [totalFrames - 24, 0.24],
+            [ctaFrame + 14, 0.36],
+            [totalFrames - 20, 0.34],
             [totalFrames, 0],
           ])
         }

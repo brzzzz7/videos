@@ -30,6 +30,9 @@ BPM = float(sys.argv[3]) if len(sys.argv) > 3 else 100.0
 # reel that should read as friendly and professional rather than hyped.
 MOOD = sys.argv[4] if len(sys.argv) > 4 else "punchy"
 LIGHT = MOOD == "light"
+# "suspense": minor drone, staccato ostinato and a clock tick — for a reel that
+# should feel like it is building to something, not like hold music.
+SUSPENSE = MOOD == "suspense"
 
 BEAT = 60.0 / BPM
 BAR = 4 * BEAT
@@ -185,6 +188,62 @@ def sweep(dur, level=0.12):
     return out * ramp * env(n, 0.05, 0.12) * level
 
 
+def drone(freq, dur, level=0.22):
+    """Low sustained note: the floor the whole thing sits on."""
+    n = int(dur * SR)
+    sig = tone(freq, n, (1.0, 0.34, 0.12, 0.05))
+    sig += 0.5 * tone(freq * 1.005, n, (1.0, 0.2))       # slow beating, unsettled
+    sig = band(sig / 1.5, low=45, high=1400)
+    swell = 0.75 + 0.25 * np.sin(np.linspace(0, np.pi * 2, n) - np.pi / 2)
+    return sig * env(n, 0.6, dur * 0.35, hold=dur * 0.4) * swell * level
+
+
+def staccato(freq, dur, level=0.2):
+    """Short plucked note, the ostinato's building block."""
+    n = int(dur * SR)
+    sig = tone(freq, n, (1.0, 0.42, 0.2, 0.08))
+    sig = band(sig, low=150, high=5200)
+    return sig * env(n, 0.005, dur * 0.55, hold=dur * 0.08, curve=2.8) * level
+
+
+def clock(level=0.16):
+    """Dry tick, the sound of time passing."""
+    n = int(0.035 * SR)
+    return noise(n, 2400, 7000, 0.022, 0.7) * level
+
+
+def thud(level=0.5):
+    """Deep hit on the section marks — body only, no crash."""
+    n = int(0.6 * SR)
+    t = np.arange(n) / SR
+    freq = 58 + 46 * np.exp(-t / 0.05)
+    body = np.sin(2 * np.pi * np.cumsum(freq) / SR)
+    body = band(body, high=900)
+    return body * env(n, 0.006, 0.55, hold=0.02, curve=2.4) * level
+
+
+def riser(dur, level=0.13):
+    """Band-limited swell into a section mark."""
+    n = int(dur * SR)
+    raw = rng.normal(0, 1, n)
+    out = np.zeros(n)
+    for k, lo in enumerate((350, 800, 1800, 3800)):
+        seg = band(raw, low=lo, high=lo * 2.4)
+        w = np.clip(1 - abs(np.linspace(0, 3, n) - k) / 1.4, 0, 1)
+        out += seg * w
+    out /= max(1e-9, np.abs(out).max())
+    return out * (np.linspace(0, 1, n) ** 2.4) * env(n, 0.1, 0.1) * level
+
+
+# a little space, on the melodic bus only
+def reverb(x, taps=((0.037, 0.3), (0.061, 0.22), (0.089, 0.15), (0.127, 0.1))):
+    out = np.zeros_like(x)
+    for d, g in taps:
+        i = int(d * SR)
+        out[i:] += x[: len(x) - i] * g
+    return band(out, high=3800)
+
+
 # ---------------------------------------------------------------- arrangement
 NOTE = {n: 440 * 2 ** ((i - 9) / 12) for i, n in enumerate(
     "C C# D D# E F F# G G# A A# B".split())}
@@ -225,7 +284,49 @@ else:
 bars = int(np.ceil(DUR / BAR)) + 1
 lead = np.zeros(L)
 
-if not LIGHT:
+if SUSPENSE:
+    # A minor: a pedal on A with the ostinato circling it, and an E (the fifth)
+    # every fourth bar to keep the harmony from settling.
+    root = note("A", 1)
+    cell = [note("A", 3), note("C", 4), note("A", 3), note("E", 4),
+            note("A", 3), note("C", 4), note("E", 4), note("D", 4)]
+
+    for b in range(bars):
+        t0 = b * BAR
+        section = b // 4
+        intensity = min(1.0, 0.66 + section * 0.11)
+        tense = b % 4 == 3
+
+        if b % 4 == 0:
+            add(t0, drone(root * (1.5 if section % 3 == 2 else 1.0), BAR * 4.1,
+                          0.13 + 0.02 * section))
+            add(t0, thud(0.42 + 0.06 * section))
+        if tense:
+            add(t0 + BAR - 0.9, riser(0.9, 0.1 + 0.02 * section))
+
+        # heartbeat pulse, not a dance kick
+        add(t0, kick(0.26 * intensity))
+        add(t0 + 0.6 * BEAT, kick(0.16 * intensity))
+        add(t0 + 2 * BEAT, kick(0.22 * intensity))
+
+        for k in range(8):
+            at = t0 + k * BEAT / 2
+            freq = cell[k] * (1.5 if tense and k >= 6 else 1.0)
+            add(at, staccato(freq, BEAT * 0.46, (0.27 + 0.04 * section) * intensity),
+                pan=-0.2 + 0.05 * (k % 4), bus=lead)
+            if k % 2 == 1:
+                add(at + BEAT / 4, clock(0.18 + 0.025 * section), pan=0.26)
+
+        # a high held note from the third section on: unease, kept quiet
+        if section >= 2 and b % 2 == 0:
+            add(t0, staccato(note("E", 5), BAR * 0.9, 0.075), pan=0.3, bus=lead)
+
+    wet = reverb(lead) * 0.6
+    add(0.0, wet, 1.0, pan=-0.32)
+    add(0.0, wet, 1.0, pan=0.32)
+    bars = 0        # skip the light/punchy arrangement below
+
+if not LIGHT and not SUSPENSE:
     add(0.0, sweep(BAR * 0.8), 0.7)
 
 for b in range(bars):
@@ -291,15 +392,6 @@ for b in range(bars):
             pan=0.26 if k % 2 else -0.26, bus=lead)
 
 
-# a little space, on the melodic bus only
-def reverb(x, taps=((0.037, 0.3), (0.061, 0.22), (0.089, 0.15), (0.127, 0.1))):
-    out = np.zeros_like(x)
-    for d, g in taps:
-        i = int(d * SR)
-        out[i:] += x[: len(x) - i] * g
-    return band(out, high=3800)
-
-
 wet = reverb(lead) * 0.55
 add(0.0, wet, 1.0, pan=-0.34)
 add(0.0, wet, 1.0, pan=0.34)
@@ -322,5 +414,6 @@ with wave.open(OUT, "w") as w:
     w.setsampwidth(2)
     w.setframerate(SR)
     w.writeframes((mix.T * 32767).astype(np.int16).tobytes())
-pattern = "light" if LIGHT else ("four-on-the-floor" if FOUR_ON_FLOOR else "syncopated")
+pattern = ("suspense" if SUSPENSE else "light" if LIGHT
+           else "four-on-the-floor" if FOUR_ON_FLOOR else "syncopated")
 print(f"wrote {OUT} ({DUR:.2f}s, {BPM:.0f} bpm, {pattern})")

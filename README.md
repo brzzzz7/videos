@@ -18,6 +18,7 @@ cross-dissolves for `Morning`.
 | Audio (Reel) | `voice.m4a` (speech), `room.m4a` (ambience), `music.m4a` (100 bpm beat) |
 | Audio (Morning) | `morning-voice.m4a` (speech, recovered from a −45 dBFS camera track), `morning-music.m4a` (124 bpm beat) |
 | Audio (Split) | `voice3.m4a` (speech), `music-light.m4a` (104 bpm major bed), `sfx/*.m4a` (six light cue sounds) |
+| Audio (Solutions) | `voice4.m4a` (speech), `music-suspense.m4a` (96 bpm minor build) |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
 
 ## Commands
@@ -163,9 +164,12 @@ applies the rotation and tone-maps the HLG/BT.2020 iPhone clip down to SDR,
 splits the speech out to its own track (so cuts trim video and audio in
 lockstep), and renders the music.
 
-The music is synthesised, not licensed: `scripts/music.py` writes an Am–F–C–G
-bed with numpy — `python3 scripts/music.py <seconds> <out.wav> [bpm]`, four on
-the floor from 115 bpm up. Its first version crackled, so the engine now follows
+The music is synthesised, not licensed: `scripts/music.py` writes a bed with
+numpy — `python3 scripts/music.py <seconds> <out.wav> [bpm] [mood]`. Three
+moods: `punchy` (minor, driving, four on the floor from 115 bpm up), `light`
+(major I–V–vi–IV, marimba, brushed drums) and `suspense` (A minor pedal, a
+staccato ostinato circling it, a clock tick, and a level that climbs ~9 dB from
+start to end — for a reel that should feel like it is building). Its first version crackled, so the engine now follows
 three rules: noise elements are FFT band-limited (raw white noise is what you
 hear as crackle), nothing is tanh-saturated, and every voice has a real attack
 and release. `scripts/check-music.py` enforces that on the output — it measures

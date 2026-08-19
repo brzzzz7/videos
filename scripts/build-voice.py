@@ -3,6 +3,12 @@
 
     python3 scripts/build-voice.py <source.mp4> <out.m4a> [ffmpeg]
 
+Both chains start with a de-click: a mouth click sitting at -30 dBFS in the raw
+recording is inaudible there, but the compressor and the normalisation lift it
+by ~12 dB and a sparse music bed no longer masks it. Measured on this recording:
+73 click-like outliers down to 28, with the speech itself altered 40 dB below
+the signal.
+
 The camera mic recorded at about -45 dBFS, so the voice needs a big lift. ffmpeg's
 own `loudnorm`/`alimiter` did not hold their true-peak ceiling in this build
 (measured 0 dBFS output with `limit=0.80`), and the overshoot clipped once the
@@ -29,6 +35,7 @@ PEAK_CEILING = 0.80          # leaves ~2 dB for the music sum and AAC overshoot
 # and heavy denoising, a normally-recorded take only needs de-rumbling.
 CHAINS = {
     "rescue": (
+        "adeclick=w=55:o=75:a=2:t=2,"   # mouth clicks, before anything amplifies them
         "volume=26dB,"
         "highpass=f=95,"
         "afftdn=nr=22:nf=-36,"
@@ -36,6 +43,7 @@ CHAINS = {
         "deesser=i=0.25"
     ),
     "clean": (
+        "adeclick=w=55:o=75:a=2:t=2,"   # mouth clicks, before the compressor lifts them
         "highpass=f=110,"                 # room rumble only
         "afftdn=nr=10:nf=-45,"
         "acompressor=threshold=-22dB:ratio=3:attack=8:release=180,"
