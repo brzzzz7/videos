@@ -9,6 +9,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Morning`** — 3 morning mistakes, 40 s | `renders/reel-matin-1080x1920.mp4` | `public/shots/*.mp4` (cropped from the 4K take) |
 | **`Split`** — same script, split-screen, 63 s | `renders/reel-split-1080x1920.mp4` | `public/talk3.mp4` (derushed take) |
 | **`Solutions`** — hair loss, 73 s | `renders/reel-solutions-1080x1920.mp4` | a voice recording + `public/cta-chair.mp4` |
+| **`Price`** — what 35 € pays for, 66 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -19,6 +20,7 @@ cross-dissolves for `Morning`.
 | Audio (Morning) | `morning-voice.m4a` (speech, recovered from a −45 dBFS camera track), `morning-music.m4a` (124 bpm beat) |
 | Audio (Split) | `voice3.m4a` (speech), `music-light.m4a` (104 bpm major bed), `sfx/*.m4a` (six light cue sounds) |
 | Audio (Solutions) | `voice4.m4a` (speech), `music-suspense.m4a` (96 bpm minor build) |
+| Audio (Price) | `voice5.m4a` (speech, from the separate mp3), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
 
 ## Commands
@@ -136,6 +138,39 @@ fall back on and no footage to keep in sync:
   barber-chair clip with a pulsing ring.
 - Cue sounds fire on each scene **and** on the beats inside the long ones;
   `src/solutions.ts` throws if any two consecutive sounds match.
+
+### `Price` — what 35 € actually pays for
+
+The picture arrived mute and the sound as its own mp3. Both are 66.04 s and were
+recorded together: the camera's own scratch track, lifted 18 dB, transcribes to
+the same words at the same timestamps as the mp3 (the phrase at 24.67 s starts
+losing its first word once the window moves past 24.70 s), so the two are
+aligned inside one frame and nothing needs sliding. Envelope cross-correlation
+was useless here — the scratch track sits at −39 dBFS and correlates at 0.14
+against nothing in particular; the transcript comparison is what settles it.
+
+- **The split is permanent.** The whole script is one enumeration — training,
+  kit, products, time, overheads — so the top half runs as a continuous
+  breakdown and the cues in `src/data/price.ts` butt against each other rather
+  than leaving gaps. Opening and closing the frame on every item is exactly the
+  bouncing he flagged on the previous cut.
+- **`BOTTOM_WINDOW_TOP = 760`** was chosen against frames sampled across the
+  whole minute, not one still: he starts high in frame and drifts down, and 760
+  is the window that keeps his face inside the bottom half from the first second
+  to the last.
+- **Nine panels** (`components/illos/price.tsx`): the price with a brace under
+  it, years of training filling a bar, the supermarket clipper against the pro
+  one, the 5 € product crossed out, a rushed cut against a finished one, twelve
+  cuts a year dropping to eight, the bills stacking up, and the low-cost trade.
+  Each lands on the words that carry it — the "un savoir-faire" stamp at 12.3 s,
+  the electricity line at 46.5 s.
+- The low-cost panel strikes **one** pillar, not three: he says a cheap salon
+  removes *one* of these points, so the mark hunts across the three while he
+  names them and locks onto the last. The first version crossed out all three,
+  which says something he did not.
+- **The CTA animation** gathers the four items onto a ring, dissolves them into
+  a card and pulses a halo behind "prends rendez-vous". They stop on the ring
+  instead of collapsing to a point — piling four labels on one spot made a blob.
 
 ## What is on screen
 
