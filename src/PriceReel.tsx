@@ -31,53 +31,83 @@ import type { Illo } from "./data/price";
 import { hook } from "./data/price";
 import {
   BOTTOM_WINDOW_TOP,
+  clips,
   ctaFrame,
+  cueMark,
   cueWindow,
+  cutFrames,
+  FPS,
   frameCues,
   lines,
   sfxFile,
-  SPLIT_FRAMES,
   SPLIT_LINE,
   splitAt,
   totalFrames,
 } from "./price";
 import { theme } from "./theme";
 
-const Illustration: React.FC<{ illo: Illo }> = ({ illo }) => {
+/** `at` turns a panel's beats, written in source seconds, into local frames. */
+const Illustration: React.FC<{ illo: Illo; at: (s: number) => number }> = ({
+  illo,
+  at,
+}) => {
   switch (illo.kind) {
     case "tag":
-      return <PriceTag />;
+      return <PriceTag at={at} />;
     case "formation":
-      return <Formation />;
+      return <Formation at={at} />;
     case "material":
-      return <Material />;
+      return <Material at={at} />;
     case "products":
-      return <ProductsCompare />;
+      return <ProductsCompare at={at} />;
     case "time":
-      return <Time />;
+      return <Time at={at} />;
     case "saving":
-      return <Saving />;
+      return <Saving at={at} />;
     case "charges":
-      return <Charges />;
+      return <Charges at={at} />;
     case "lowcost":
-      return <LowCost />;
+      return <LowCost at={at} />;
     case "cta":
-      return <CtaPrice />;
+      return <CtaPrice at={at} />;
   }
+};
+
+/** The last jump cut at or before this frame — what the kick springs from. */
+const lastCutAtOrBefore = (frame: number) => {
+  let found = 0;
+  for (const cut of cutFrames) {
+    if (cut <= frame) found = cut;
+    else break;
+  }
+  return found;
 };
 
 /**
  * The picture keeps the bottom half. The window slides down to
  * BOTTOM_WINDOW_TOP as the split opens, so his face stays framed inside that
  * half rather than being pushed out of it.
+ *
+ * The pauses are cut, so the footage is a run of clips rather than one file.
+ * Each cut gets a small spring kick: the camera never moves in this take, so a
+ * hard cut on a static frame reads as a glitch unless something acknowledges
+ * it.
  */
 const Stage: React.FC = () => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const open = splitAt(frame);
   const clipTop = SPLIT_LINE * open;
   // The window must show source rows BOTTOM_WINDOW_TOP..+960 inside the bottom
   // half, so the picture's top edge sits at (SPLIT_LINE - BOTTOM_WINDOW_TOP).
   const videoTop = (SPLIT_LINE - BOTTOM_WINDOW_TOP) * open;
+
+  const settle = spring({
+    frame: frame - lastCutAtOrBefore(frame),
+    fps,
+    config: { damping: 16, stiffness: 170, mass: 0.6 },
+  });
+  const kick = frame < cutFrames[0] ? 1 : 0.972 + settle * 0.028;
 
   return (
     <div
@@ -90,19 +120,41 @@ const Stage: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      <OffthreadVideo
-        src={staticFile("talk5.mp4")}
-        muted
-        toneMapped={false}
+      <div
         style={{
           position: "absolute",
           top: videoTop - clipTop,
           left: 0,
           width: theme.width,
           height: theme.height,
-          objectFit: "cover",
+          transform: `scale(${kick})`,
+          transformOrigin: "50% 40%",
         }}
-      />
+      >
+        {clips.map((clip, i) => (
+          <Sequence
+            key={`clip-${i}`}
+            from={clip.from}
+            durationInFrames={clip.durationInFrames}
+            layout="none"
+          >
+            <OffthreadVideo
+              src={staticFile("talk5.mp4")}
+              trimBefore={Math.round(clip.srcFrom * FPS)}
+              muted
+              toneMapped={false}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: theme.width,
+                height: theme.height,
+                objectFit: "cover",
+              }}
+            />
+          </Sequence>
+        ))}
+      </div>
     </div>
   );
 };
@@ -130,8 +182,8 @@ const Panel: React.FC = () => {
           the overlap at the edges is what dissolves one panel into the next */}
       {frameCues.map((cue, i) => (
         <Sequence key={`illo-${i}`} {...cueWindow(cue)} layout="none">
-          <IlloFade length={cue.to + SPLIT_FRAMES - (cue.from - SPLIT_FRAMES)}>
-            <Illustration illo={cue.illo} />
+          <IlloFade length={cueWindow(cue).durationInFrames}>
+            <Illustration illo={cue.illo} at={cueMark(cue)} />
           </IlloFade>
         </Sequence>
       ))}
@@ -285,7 +337,22 @@ export const PriceReel: React.FC = () => {
       </Sequence>
 
       {/* ------------------------------------------------------------ audio */}
-      <Audio src={staticFile("voice5.m4a")} volume={1} />
+      {/* the voice is cut on the same spans as the picture, so a trimmed pause
+          removes image and sound together */}
+      {clips.map((clip, i) => (
+        <Sequence
+          key={`voice-${i}`}
+          from={clip.from}
+          durationInFrames={clip.durationInFrames}
+          layout="none"
+        >
+          <Audio
+            src={staticFile("voice5.m4a")}
+            trimBefore={Math.round(clip.srcFrom * FPS)}
+            volume={1}
+          />
+        </Sequence>
+      ))}
 
       {frameCues.map((cue, i) => (
         <Sequence key={`sfx-${i}`} from={Math.max(0, cue.from - 9)} layout="none">

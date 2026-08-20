@@ -6,7 +6,11 @@
 Point it at the RAW recording, not at the processed voice track: build-voice.py
 lifts the noise floor by ~17 dB, which hides most pauses from silencedetect. The
 timing is identical either way, so spans measured on the raw file apply to the
-processed one.
+processed one — and to a mute picture shot alongside it, which is how the Price
+reel cuts image and sound in lockstep.
+
+Thresholds are env-overridable: SPANS_CUT_ABOVE, SPANS_KEEP, SPANS_HEAD_KEEP,
+SPANS_NOISE, SPANS_MIN_SILENCE.
 
 A recording made without a camera has nothing to keep in sync, so pauses can be
 trimmed freely. Anything longer than CUT_ABOVE is reduced to KEEP — long enough
@@ -24,11 +28,14 @@ SRC = sys.argv[1] if len(sys.argv) > 1 else None
 OUT = sys.argv[2] if len(sys.argv) > 2 else "spans.json"
 FFMPEG = sys.argv[3] if len(sys.argv) > 3 else "ffmpeg"
 
-NOISE = "-34dB"
-MIN_SILENCE = "0.25"
-CUT_ABOVE = 0.45     # pauses longer than this get tightened
-KEEP = 0.20          # what is left of them
-HEAD_KEEP = 0.15     # silence before the first word
+NOISE = os.environ.get("SPANS_NOISE", "-34dB")
+MIN_SILENCE = os.environ.get("SPANS_MIN_SILENCE", "0.25")
+# How hard to tighten. A voice-over with no picture takes the defaults; a take
+# that also has to cut its own footage wants a shorter KEEP, because a jump cut
+# reads as a beat all by itself.
+CUT_ABOVE = float(os.environ.get("SPANS_CUT_ABOVE", "0.45"))
+KEEP = float(os.environ.get("SPANS_KEEP", "0.20"))
+HEAD_KEEP = float(os.environ.get("SPANS_HEAD_KEEP", "0.15"))
 MIN_SPAN = 0.30
 SPEECH_FLOOR_DB = -26.0   # a span this far under the speech level holds no words
 

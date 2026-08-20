@@ -9,7 +9,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Morning`** — 3 morning mistakes, 40 s | `renders/reel-matin-1080x1920.mp4` | `public/shots/*.mp4` (cropped from the 4K take) |
 | **`Split`** — same script, split-screen, 63 s | `renders/reel-split-1080x1920.mp4` | `public/talk3.mp4` (derushed take) |
 | **`Solutions`** — hair loss, 73 s | `renders/reel-solutions-1080x1920.mp4` | a voice recording + `public/cta-chair.mp4` |
-| **`Price`** — what 35 € pays for, 66 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
+| **`Price`** — what 35 € pays for, 57 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -149,6 +149,27 @@ aligned inside one frame and nothing needs sliding. Envelope cross-correlation
 was useless here — the scratch track sits at −39 dBFS and correlates at 0.14
 against nothing in particular; the transcript comparison is what settles it.
 
+- **The pauses are cut.** `src/data/price-spans.json` holds the cut list —
+  every gap over 0.35 s tightened to a 0.16 s breath, 8.6 s of dead air gone and
+  66.0 s down to 57.5 s. One list serves both files: it is measured on the raw
+  mp3 and applied to the mute take as well, so picture and sound are trimmed in
+  lockstep. Regenerate with
+
+  ```console
+  SPANS_CUT_ABOVE=0.35 SPANS_KEEP=0.16 SPANS_HEAD_KEEP=0.12 \
+    python3 scripts/build-spans-voice.py <raw.mp3> src/data/price-spans.json <ffmpeg>
+  ```
+
+  The camera never moves in this take, so each cut gets a small spring kick —
+  a hard cut on a static frame reads as a glitch unless something acknowledges
+  it. Measured at the fifteen edit points, the worst audio discontinuity is
+  0.31× the local level; a click reads above about 8×.
+- **Nothing holds a frame number.** Captions, cues and each panel's internal
+  beats are all written in source seconds and mapped through `srcToFrame`, so
+  re-cutting the spans moves them together. Panels receive an `at()` from
+  `cueMark` and ask for their own beats — `at(12.35)` for the "un savoir-faire"
+  stamp — rather than storing local frames that are only right for one version
+  of the cut.
 - **The split is permanent.** The whole script is one enumeration — training,
   kit, products, time, overheads — so the top half runs as a continuous
   breakdown and the cues in `src/data/price.ts` butt against each other rather
@@ -162,8 +183,8 @@ against nothing in particular; the transcript comparison is what settles it.
   it, years of training filling a bar, the supermarket clipper against the pro
   one, the 5 € product crossed out, a rushed cut against a finished one, twelve
   cuts a year dropping to eight, the bills stacking up, and the low-cost trade.
-  Each lands on the words that carry it — the "un savoir-faire" stamp at 12.3 s,
-  the electricity line at 46.5 s.
+  Each lands on the words that carry it — the "un savoir-faire" stamp at 12.35 s,
+  the electricity line at 46.55 s.
 - The low-cost panel strikes **one** pillar, not three: he says a cheap salon
   removes *one* of these points, so the mark hunts across the three while he
   names them and locks onto the last. The first version crossed out all three,

@@ -22,6 +22,14 @@ const fade = (frame: number, at: number, over = 10) =>
 
 const RED = "#FF6B5A";
 
+/**
+ * Every panel animates against the words underneath it, so its beats are given
+ * in SOURCE seconds and converted by `at` (from `cueMark` in price.ts). Holding
+ * local frame numbers instead would silently desync each panel the moment the
+ * cut list changed.
+ */
+export type Beat = { at: (seconds: number) => number };
+
 /** A pill of text — the panels are all built out of these. */
 const Chip: React.FC<{
   children: React.ReactNode;
@@ -59,11 +67,11 @@ const Chip: React.FC<{
 };
 
 /** 35 € lands, then the panel asks what is inside it. */
-export const PriceTag: React.FC = () => {
+export const PriceTag: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const land = pop(frame, fps, 4);
-  const open = pop(frame, fps, 30);
+  const land = pop(frame, fps, at(0.95));
+  const open = pop(frame, fps, at(1.6));
 
   return (
     <IlloFrame title="le vrai prix">
@@ -99,8 +107,8 @@ export const PriceTag: React.FC = () => {
           style={{
             ...label(44, 700),
             color: theme.warm,
-            opacity: fade(frame, 44),
-            transform: `translateY(${(1 - fade(frame, 44)) * 12}px)`,
+            opacity: fade(frame, at(2.35)),
+            transform: `translateY(${(1 - fade(frame, at(2.35))) * 12}px)`,
           }}
         >
           ça couvre quoi, vraiment ?
@@ -111,11 +119,11 @@ export const PriceTag: React.FC = () => {
 };
 
 /** 01 — years of training, then the training that never stops. */
-export const Formation: React.FC = () => {
+export const Formation: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   // the bar fills while he says "des années à apprendre des techniques"
-  const grow = interpolate(frame, [66, 132], [0, 1], {
+  const grow = interpolate(frame, [at(6.88), at(9.25)], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -124,7 +132,7 @@ export const Formation: React.FC = () => {
   return (
     <IlloFrame title="01 · la formation">
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", gap: 30 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 16, opacity: fade(frame, 60) }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 16, opacity: fade(frame, at(6.8)) }}>
           <div
             style={{
               fontFamily: SANS,
@@ -147,7 +155,7 @@ export const Formation: React.FC = () => {
             borderRadius: 999,
             background: "rgba(255,255,255,0.1)",
             overflow: "hidden",
-            opacity: fade(frame, 60),
+            opacity: fade(frame, at(6.8)),
           }}
         >
           <div
@@ -161,9 +169,9 @@ export const Formation: React.FC = () => {
         </div>
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", maxWidth: 800 }}>
-          <Chip frame={frame} fps={fps} show={150} tone="warm">+ formation continue</Chip>
-          <Chip frame={frame} fps={fps} show={162}>nouvelles coupes</Chip>
-          <Chip frame={frame} fps={fps} show={174}>nouveaux produits</Chip>
+          <Chip frame={frame} fps={fps} show={at(9.9)} tone="warm">+ formation continue</Chip>
+          <Chip frame={frame} fps={fps} show={at(10.3)}>nouvelles coupes</Chip>
+          <Chip frame={frame} fps={fps} show={at(10.7)}>nouveaux produits</Chip>
         </div>
 
         {/* the conclusion of the section, on the words "un savoir-faire" */}
@@ -179,8 +187,8 @@ export const Formation: React.FC = () => {
             fontSize: 42,
             letterSpacing: 1,
             textTransform: "uppercase",
-            opacity: fade(frame, 240, 12),
-            transform: `scale(${0.9 + fade(frame, 240, 12) * 0.1}) rotate(-2deg)`,
+            opacity: fade(frame, at(12.35), 12),
+            transform: `scale(${0.9 + fade(frame, at(12.35), 12) * 0.1}) rotate(-2deg)`,
           }}
         >
           un savoir-faire
@@ -191,7 +199,7 @@ export const Formation: React.FC = () => {
 };
 
 /** 02 — what the kit costs, and that it does not last forever. */
-export const Material: React.FC = () => {
+export const Material: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const bars = [
@@ -209,10 +217,10 @@ export const Material: React.FC = () => {
     <IlloFrame title="02 · le matériel">
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", gap: 26 }}>
         {bars.map((b, i) => {
-          const g = grow(64 + i * 44);
+          const g = grow(i === 0 ? at(17.6) : at(19.0));
           const width = (b.value / b.max) * 620;
           return (
-            <div key={b.name} style={{ width: 760, opacity: fade(frame, 56 + i * 44) }}>
+            <div key={b.name} style={{ width: 760, opacity: fade(frame, i === 0 ? at(17.3) : at(18.7)) }}>
               <div style={{ ...label(30, 600), color: theme.mute, marginBottom: 8 }}>
                 {b.name}
               </div>
@@ -243,9 +251,9 @@ export const Material: React.FC = () => {
 
         {/* on "ça s'use, ça se remplace, ça se répare" */}
         <div style={{ display: "flex", gap: 16, marginTop: 14 }}>
-          <Chip frame={frame} fps={fps} show={190}>ça s'use</Chip>
-          <Chip frame={frame} fps={fps} show={212}>ça se remplace</Chip>
-          <Chip frame={frame} fps={fps} show={232}>ça se répare</Chip>
+          <Chip frame={frame} fps={fps} show={at(21.9)}>ça s'use</Chip>
+          <Chip frame={frame} fps={fps} show={at(22.8)}>ça se remplace</Chip>
+          <Chip frame={frame} fps={fps} show={at(23.4)}>ça se répare</Chip>
         </div>
       </AbsoluteFill>
     </IlloFrame>
@@ -253,7 +261,7 @@ export const Material: React.FC = () => {
 };
 
 /** 03 — the products are not the supermarket ones. */
-export const ProductsCompare: React.FC = () => {
+export const ProductsCompare: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const items = [
@@ -266,7 +274,7 @@ export const ProductsCompare: React.FC = () => {
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
         <div style={{ display: "flex", gap: 80, alignItems: "flex-end" }}>
           {items.map((it, i) => {
-            const p = pop(frame, fps, 10 + i * 14);
+            const p = pop(frame, fps, i === 0 ? at(24.9) : at(25.4));
             const bottle = it.ok ? theme.warm : "rgba(255,255,255,0.14)";
             return (
               <div
@@ -307,7 +315,7 @@ export const ProductsCompare: React.FC = () => {
                         x1="26" y1="24" x2="204" y2="226"
                         stroke={RED} strokeWidth="10" strokeLinecap="round"
                         strokeDasharray="270"
-                        strokeDashoffset={270 * (1 - fade(frame, 95, 12))}
+                        strokeDashoffset={270 * (1 - fade(frame, at(27.6), 12))}
                       />
                     </svg>
                   ) : null}
@@ -328,12 +336,12 @@ export const ProductsCompare: React.FC = () => {
 };
 
 /** 04 — a rushed cut against one with the finishing done. */
-export const Time: React.FC = () => {
+export const Time: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const rows = [
-    { name: "bâclé", minutes: 10, tone: "bad" as const, delay: 30 },
-    { name: "bien fait", minutes: 45, tone: "warm" as const, delay: 62 },
+    { name: "bâclé", minutes: 10, tone: "bad" as const, delay: at(30.9) },
+    { name: "bien fait", minutes: 45, tone: "warm" as const, delay: at(33.5) },
   ];
 
   return (
@@ -383,9 +391,9 @@ export const Time: React.FC = () => {
 
         {/* on "les finitions" */}
         <div style={{ display: "flex", gap: 16, marginTop: 10 }}>
-          <Chip frame={frame} fps={fps} show={150} tone="warm">contours</Chip>
-          <Chip frame={frame} fps={fps} show={164} tone="warm">dégradé</Chip>
-          <Chip frame={frame} fps={fps} show={178} tone="warm">finitions</Chip>
+          <Chip frame={frame} fps={fps} show={at(35.1)} tone="warm">contours</Chip>
+          <Chip frame={frame} fps={fps} show={at(35.5)} tone="warm">dégradé</Chip>
+          <Chip frame={frame} fps={fps} show={at(35.9)} tone="warm">finitions</Chip>
         </div>
       </AbsoluteFill>
     </IlloFrame>
@@ -393,9 +401,9 @@ export const Time: React.FC = () => {
 };
 
 /** A cut that holds is a cut you need less often. */
-export const Saving: React.FC = () => {
+export const Saving: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
-  const drop = interpolate(frame, [22, 60], [0, 1], {
+  const drop = interpolate(frame, [at(38.9), at(40.2)], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -431,7 +439,7 @@ export const Saving: React.FC = () => {
           style={{
             ...label(44, 700),
             color: theme.warm,
-            opacity: interpolate(frame, [46, 60], [0, 1], {
+            opacity: interpolate(frame, [at(39.9), at(40.4)], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             }),
@@ -445,15 +453,15 @@ export const Saving: React.FC = () => {
 };
 
 /** 05 — the bills that run whether or not anyone sits in the chair. */
-export const Charges: React.FC = () => {
+export const Charges: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   // each line lands on the word: loyer, charges, électricité, assurances
   const items = [
-    { name: "loyer", show: 14 },
-    { name: "charges", show: 60 },
-    { name: "électricité", show: 171 },
-    { name: "assurances", show: 217 },
+    { name: "loyer", show: at(41.35) },
+    { name: "charges", show: at(42.85) },
+    { name: "électricité", show: at(46.55) },
+    { name: "assurances", show: at(48.05) },
   ];
 
   return (
@@ -495,7 +503,7 @@ export const Charges: React.FC = () => {
             ...label(34, 700),
             color: RED,
             marginTop: 10,
-            opacity: fade(frame, 232, 14),
+            opacity: fade(frame, at(48.9), 14),
             textAlign: "center",
           }}
         >
@@ -513,16 +521,17 @@ export const Charges: React.FC = () => {
  * mark hunts across the three while he names them and settles on the last one —
  * striking all three, which the first version did, says something he did not.
  */
-export const LowCost: React.FC = () => {
+export const LowCost: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const pillars = ["la formation", "le matériel", "le temps"];
 
-  // he lists them from local frame 172 to 259; the mark hunts over that stretch
-  // and locks onto the last one at 244, which is where the strike is drawn
-  const LOCK = 244;
-  const hunting = frame >= 168 && frame < LOCK;
-  const marked = hunting ? Math.floor((frame - 168) / 13) % 3 : frame >= LOCK ? 2 : -1;
+  // he names the three from 56.4 s to 59.3 s; the mark hunts over that stretch
+  // and locks onto the last one as he lands on "le temps passé sur toi"
+  const HUNT = at(56.4);
+  const LOCK = at(58.5);
+  const marked =
+    frame >= LOCK ? 2 : frame >= HUNT ? Math.floor((frame - HUNT) / 11) % 3 : -1;
 
   return (
     <IlloFrame title="le prix cassé">
@@ -531,7 +540,7 @@ export const LowCost: React.FC = () => {
           style={{
             ...label(40, 700),
             color: RED,
-            opacity: fade(frame, 10),
+            opacity: fade(frame, at(51.0)),
             letterSpacing: 1,
           }}
         >
@@ -541,7 +550,7 @@ export const LowCost: React.FC = () => {
         <div style={{ display: "flex", gap: 22 }}>
           {pillars.map((name, i) => {
             // they stand up during the pause before he names them
-            const p = pop(frame, fps, 96 + i * 14);
+            const p = pop(frame, fps, at(53.7 + i * 0.35));
             const on = marked === i;
             const off = frame >= LOCK && i === 2;
             return (
@@ -593,7 +602,7 @@ export const LowCost: React.FC = () => {
           style={{
             ...label(34, 600),
             color: theme.mute,
-            opacity: fade(frame, 66, 12),
+            opacity: fade(frame, at(52.9), 12),
           }}
         >
           il en saute forcément un
@@ -607,13 +616,13 @@ export const LowCost: React.FC = () => {
  * The CTA animation: the three pillars fly back together into one card, a ring
  * pulses around it and the booking line slides up under it.
  */
-export const CtaPrice: React.FC = () => {
+export const CtaPrice: React.FC<Beat> = ({ at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const gather = spring({ frame: frame - 10, fps, config: { damping: 20, stiffness: 80 } });
-  const card = spring({ frame: frame - 46, fps, config: { damping: 18, stiffness: 110 } });
-  const line = spring({ frame: frame - 96, fps, config: { damping: 20, stiffness: 120 } });
-  const pulse = 1 + Math.sin(Math.max(0, frame - 60) / 7) * 0.035;
+  const gather = spring({ frame: frame - at(59.95), fps, config: { damping: 20, stiffness: 80 } });
+  const card = spring({ frame: frame - at(61.2), fps, config: { damping: 18, stiffness: 110 } });
+  const line = spring({ frame: frame - at(63.2), fps, config: { damping: 20, stiffness: 120 } });
+  const pulse = 1 + Math.sin(Math.max(0, frame - at(61.6)) / 7) * 0.035;
 
   // They travel inward but stop on a ring instead of piling up on the centre —
   // collapsing them to one point turned four labels into an unreadable blob.
