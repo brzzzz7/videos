@@ -10,6 +10,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Split`** — same script, split-screen, 63 s | `renders/reel-split-1080x1920.mp4` | `public/talk3.mp4` (derushed take) |
 | **`Solutions`** — hair loss, 73 s | `renders/reel-solutions-1080x1920.mp4` | a voice recording + `public/cta-chair.mp4` |
 | **`Price`** — what 35 € pays for, 57 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
+| **`Stories`** — 3 client horror stories, 47 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -21,6 +22,7 @@ cross-dissolves for `Morning`.
 | Audio (Split) | `voice3.m4a` (speech), `music-light.m4a` (104 bpm major bed), `sfx/*.m4a` (six light cue sounds) |
 | Audio (Solutions) | `voice4.m4a` (speech), `music-suspense.m4a` (96 bpm minor build) |
 | Audio (Price) | `voice5.m4a` (speech, from the separate mp3), `music-suspense.m4a` again, `sfx/*.m4a` |
+| Audio (Stories) | `voice6.m4a` (speech, recovered from a −39 LUFS camera track), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
 
 ## Commands
@@ -192,6 +194,47 @@ against nothing in particular; the transcript comparison is what settles it.
 - **The CTA animation** gathers the four items onto a ring, dissolves them into
   a card and pulses a halo behind "prends rendez-vous". They stop on the ring
   instead of collapsing to a point — piling four labels on one spot made a blob.
+
+### `Stories` — three client horror stories
+
+Same data-driven shape as `Price` — a cut list plus an anchored transcript, both
+in source seconds — with one structural difference: **the illustrations take the
+whole frame** and alternate with the facecam instead of sharing the screen with
+it. Seven scenes over 47 s, roughly half the reel; a full-screen graphic that
+never gives the frame back stops illustrating the video and becomes it.
+
+- **Sound was 27 dB down.** The camera mic put the speech at −36.6 dBFS with
+  16.8 dB of SNR. A chain tuned for exactly that (a stronger denoiser told where
+  the floor lands after the gain) measured *worse* than the existing `rescue`
+  preset on both counts — 9.7 dB of SNR against 10.6, and 2.4 % of hiss above
+  6 kHz against 0.3 % — so `rescue` is what ships and the tuned chain was
+  dropped.
+- **The take was already tight**: 6.1 s of silence in 49.6 s, none of it longer
+  than 0.74 s, so the same 0.35 s → 0.16 s tightening only recovers 2.5 s.
+- **Scenes** (`components/illos/stories.tsx`): the head that loses its hair as he
+  says "complètement rasé", −2 cm against 3× too short, a clock running two
+  hours, a 14:00 appointment reached at 16:05, a struck-out speech bubble, the
+  client's line against the barber's own version, and a comment field that types
+  itself for the CTA.
+- Two glyphs were redrawn after looking at them: the hair started as a band
+  across the forehead, which read as a headband rather than a haircut, and the
+  "he doesn't listen" ear read as a blob at every size tried, stroked or filled
+  — a crossed-out speech bubble cannot be misread.
+- **Scene titles are keyed to the wipe, not to a source second.** Keying them to
+  a word left the CTA on screen and empty for about 15 frames, which reads as a
+  black hole rather than a transition.
+- `public/talk6.mp4` is the 89 MB original re-encoded to 35 MB at CRF 18
+  (SSIM 0.994, PSNR 50.2 dB) so the repo stays in line with the other takes; the
+  cut is rendered from that file, not from the original.
+
+#### A trap worth knowing
+
+`AbsoluteFill` builds its style as `{...defaults, ...yours}` but the defaults
+include `width: 100%` and `height: 100%`. Overriding `top` and `bottom` on one
+therefore does *not* give you a band: `height` wins, `bottom` is ignored, and the
+box runs a full frame height past its own top. That is what put every scene's
+content ~550 px low, on top of the captions. Any element meant to occupy part of
+the frame is a plain positioned `div` here, with an explicit height.
 
 ## What is on screen
 
