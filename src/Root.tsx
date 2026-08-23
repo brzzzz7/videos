@@ -3,12 +3,14 @@ import { Composition } from "remotion";
 
 import { MorningReel } from "./MorningReel";
 import { PriceReel } from "./PriceReel";
+import { QuestionsReel } from "./QuestionsReel";
 import { StoriesReel } from "./StoriesReel";
 import { SolutionsReel } from "./SolutionsReel";
 import { SplitReel } from "./SplitReel";
 import { Reel } from "./Reel";
 import { FPS as MORNING_FPS, totalFrames as morningFrames } from "./morning";
 import { FPS as PRICE_FPS, totalFrames as priceFrames } from "./price";
+import { FPS as QUESTIONS_FPS, totalFrames as questionsFrames } from "./questions";
 import { FPS as STORIES_FPS, totalFrames as storiesFrames } from "./stories";
 import { FPS as SOLUTIONS_FPS, totalFrames as solutionsFrames } from "./solutions";
 import { FPS as SPLIT_FPS, totalFrames as splitFrames } from "./split";
@@ -23,6 +25,14 @@ export const RemotionRoot: React.FC = () => {
         component={Reel}
         durationInFrames={totalFrames}
         fps={FPS}
+        width={theme.width}
+        height={theme.height}
+      />
+      <Composition
+        id="Questions"
+        component={QuestionsReel}
+        durationInFrames={questionsFrames}
+        fps={QUESTIONS_FPS}
         width={theme.width}
         height={theme.height}
       />

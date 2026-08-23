@@ -11,6 +11,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Solutions`** — hair loss, 73 s | `renders/reel-solutions-1080x1920.mp4` | a voice recording + `public/cta-chair.mp4` |
 | **`Price`** — what 35 € pays for, 57 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
 | **`Stories`** — 3 client horror stories, 47 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
+| **`Questions`** — the "worst" questions to ask, 42 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -23,6 +24,7 @@ cross-dissolves for `Morning`.
 | Audio (Solutions) | `voice4.m4a` (speech), `music-suspense.m4a` (96 bpm minor build) |
 | Audio (Price) | `voice5.m4a` (speech, from the separate mp3), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Stories) | `voice6.m4a` (speech, recovered from a −39 LUFS camera track), `music-suspense.m4a` again, `sfx/*.m4a` |
+| Audio (Questions) | `voice7.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
 
 ## Commands
@@ -226,6 +228,33 @@ never gives the frame back stops illustrating the video and becomes it.
 - `public/talk6.mp4` is the 89 MB original re-encoded to 35 MB at CRF 18
   (SSIM 0.994, PSNR 50.2 dB) so the repo stays in line with the other takes; the
   cut is rendered from that file, not from the original.
+
+### `Questions` — the three "worst" questions
+
+Same grammar as `Stories`, so the two share their scene kit
+(`components/illos/scene-kit.tsx`: the titled full-frame card, the middle band,
+the head, the beat helpers). What is specific here is the shape of the script —
+three questions, each a card then an answer scene, and a CTA that carries the
+twist, since the whole premise turns out to be a joke: there are no stupid
+questions. The CTA strikes through "les pires questions" before the comment
+field types itself.
+
+- **The facecam gaps are enforced, not eyeballed.** `src/questions.ts` throws if
+  fewer than 42 frames of facecam separate two scenes: a scene that leaves the
+  frame and comes back half a second later reads as a flicker, not as a return
+  to him. It caught a real one — 1.84 s of planned facecam collapsed to 1.33 s
+  once the pause inside it was cut — which is exactly the kind of thing that is
+  invisible in the source and obvious on screen.
+- **Scenes**: growth bars that fill identically whether or not the hair is cut
+  (with "couper évite juste la casse" as the nuance he actually gives), a crown
+  seen from above with four zones and their follicle directions, and two clearly
+  different heads under "similaire ≠ identique".
+- The scalp scene started as a head beside a column of text, which left it small
+  and stranded on one side, with the zones washed out at 50 % opacity over a
+  colour they barely differed from. It is centred now, with the zones on the
+  crown itself and the text under it.
+- Sound was properly recorded this time (−20.3 LUFS, 21.4 dB of SNR), so it
+  takes the `clean` chain rather than `rescue`.
 
 #### A trap worth knowing
 
