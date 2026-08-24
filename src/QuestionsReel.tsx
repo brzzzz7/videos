@@ -181,12 +181,17 @@ export const HOOK_FRAMES = 96;   // 3.2 s — it now overlaps the first question
 export const CAPTIONS_FROM = 57;
 
 /**
- * The opening hook, over the top of the frame.
+ * The opening hook: his own first sentence, over the top of the frame.
  *
- * No card and no border: it sits straight on the picture, held up by a warm
- * glow, a heavy face and a marker swipe rather than by a box. Anton is used
- * here and nowhere else in the reel — a condensed display face next to the
- * Montserrat captions reads as a different voice, which is the point of a hook.
+ * Each part springs in as he says it — "voici" on the word, "les pires
+ * questions" behind it, the rest as he finishes — so the hook reads as the line
+ * being spoken rather than as a title card laid over it. Phrase 0 runs to frame
+ * 56, which is where the captions take over.
+ *
+ * No card and no border: it is held up by a warm glow, a heavy face and a marker
+ * swipe. Anton is used here and nowhere else in the reel — a condensed display
+ * face next to the Montserrat captions reads as a different voice, which is the
+ * point of a hook.
  */
 const HookCard: React.FC = () => {
   const frame = useCurrentFrame();
@@ -199,11 +204,15 @@ const HookCard: React.FC = () => {
       config: { damping: 13, stiffness: 200, mass: 0.6 },
     });
 
-  const eyebrow = pop(2);
-  const first = pop(7);
-  const second = pop(14);
-  // the swipe runs through "me demander" once the line has landed
-  const swipe = interpolate(frame, [22, 34], [0, 1], {
+  // Where each part of the sentence falls inside phrase 0. The numbers are its
+  // own word timings, from the same syllable-weighted pass the captions use:
+  // "voici" 0-7, "les" 7-12, "pires" 12-19, "questions" 19-26, and the tail
+  // from 26 to 56.
+  const first = pop(1);
+  const punch = pop(8);
+  const rest = pop(27);
+  // the marker sweeps across exactly while he says "pires questions"
+  const swipe = interpolate(frame, [12, 26], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -221,6 +230,9 @@ const HookCard: React.FC = () => {
     lineHeight: 0.94,
     letterSpacing: -1,
   } as const;
+
+  const shadow =
+    "0 6px 30px rgba(0,0,0,0.75), 0 2px 6px rgba(0,0,0,0.6)";
 
   return (
     <AbsoluteFill style={{ zIndex: 65, opacity: 1 - out }}>
@@ -249,32 +261,15 @@ const HookCard: React.FC = () => {
         <div
           style={{
             ...display,
-            fontSize: 46,
-            letterSpacing: 10,
+            fontSize: 48,
+            letterSpacing: 12,
             color: theme.warm,
-            opacity: eyebrow,
-            transform: `translateY(${(1 - eyebrow) * -18}px)`,
+            opacity: first,
+            transform: `translateY(${(1 - first) * -18}px)`,
             textShadow: "0 2px 18px rgba(0,0,0,0.6)",
           }}
         >
-          {hook.eyebrow}
-        </div>
-
-        <div
-          style={{
-            ...display,
-            marginTop: 18,
-            fontSize: 104,
-            color: theme.paper,
-            opacity: first,
-            transform: `translateY(${(1 - first) * 26}px) scale(${
-              0.88 + first * 0.12
-            })`,
-            textShadow:
-              "0 6px 30px rgba(0,0,0,0.75), 0 2px 6px rgba(0,0,0,0.6)",
-          }}
-        >
-          {hook.line1}
+          {hook.first}
         </div>
 
         {/* the swipe: a warm bar wipes across and the text flips to ink on it */}
@@ -282,11 +277,11 @@ const HookCard: React.FC = () => {
           style={{
             position: "relative",
             display: "inline-block",
-            marginTop: 10,
+            marginTop: 14,
             padding: "6px 18px",
-            opacity: second,
-            transform: `translateY(${(1 - second) * 26}px) scale(${
-              0.88 + second * 0.12
+            opacity: punch,
+            transform: `translateY(${(1 - punch) * 26}px) scale(${
+              0.88 + punch * 0.12
             })`,
           }}
         >
@@ -305,13 +300,12 @@ const HookCard: React.FC = () => {
             style={{
               ...display,
               position: "relative",
-              fontSize: 136,
+              fontSize: 112,
               color: theme.paper,
-              textShadow:
-                "0 6px 30px rgba(0,0,0,0.75), 0 2px 6px rgba(0,0,0,0.6)",
+              textShadow: shadow,
             }}
           >
-            {hook.line2}
+            {hook.punch}
           </div>
           {/* the same words in ink, revealed exactly as far as the bar has run */}
           <div
@@ -321,13 +315,27 @@ const HookCard: React.FC = () => {
               top: 6,
               left: 18,
               right: 18,
-              fontSize: 136,
+              fontSize: 112,
               color: "#171310",
               clipPath: `inset(0 ${(1 - swipe) * 100}% 0 0)`,
             }}
           >
-            {hook.line2}
+            {hook.punch}
           </div>
+        </div>
+
+        <div
+          style={{
+            ...display,
+            marginTop: 14,
+            fontSize: 62,
+            color: "rgba(255,255,255,0.94)",
+            opacity: rest,
+            transform: `translateY(${(1 - rest) * 20}px)`,
+            textShadow: shadow,
+          }}
+        >
+          {hook.rest}
         </div>
       </div>
     </AbsoluteFill>

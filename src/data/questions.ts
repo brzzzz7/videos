@@ -102,13 +102,16 @@ export const cues: Cue[] = [
 ];
 
 /**
- * The hook plays the curiosity gap rather than announcing the list: the payoff
- * of the reel is that none of these questions is stupid, so the opening leans on
- * the thing stopping you asking them. Set in Anton, the one place in the reel
- * that is not Montserrat.
+ * The hook is his own opening line, word for word — phrase 0 of the transcript.
+ * It is split in three so each part can land as he says it, and so the strongest
+ * words can take the marker. Set in Anton, the one place in the reel that is not
+ * Montserrat.
+ *
+ * Captions stay hidden until frame 57 (see CAPTIONS_FROM), which is where this
+ * phrase ends: the hook *is* the caption for the opening line.
  */
 export const hook = {
-  eyebrow: "3 questions",
-  line1: "ce que tu n'oses pas",
-  line2: "me demander",
+  first: "voici",
+  punch: "les pires questions",
+  rest: "à poser chez le barbier",
 };

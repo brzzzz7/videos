@@ -267,12 +267,18 @@ field types itself.
   against its predicted position: all 16 within 0.06 s, no accumulating drift,
   and two facecam frames matched back to the source land within 3 frames.
 - The opening fade is gone — frame 0 is the picture.
-- **The hook is the one thing not set in Montserrat.** Anton — condensed, heavy,
+- **The hook is his own opening line**, word for word — phrase 0 of the
+  transcript, split in three so each part springs in as he says it. The delays
+  come from the same syllable-weighted word timing the captions use ("voici"
+  0–7, "les pires questions" 7–26, the tail to 56), and the marker sweeps across
+  exactly while he says "pires questions". Captions start at frame 57, where
+  that phrase ends, so the hook *is* the caption for the opening line rather
+  than a title card laid over it.
+- **It is the one thing not set in Montserrat.** Anton — condensed, heavy,
   uppercase — reads as a different voice next to the captions, which is what a
   hook is for. No card and no border: it is held up by a warm bloom, a heavy
-  face and a gold marker that swipes through "me demander", with the words
-  flipping to ink exactly as far as the bar has run (two copies of the line, the
-  ink one clipped to the swipe).
+  face and a gold marker, with the words flipping to ink exactly as far as the
+  bar has run (two copies of the line, the ink one clipped to the swipe).
 - **It outlives the first question card**, holding 3.2 s, so the top of the frame
   is shared: the scene's index chip at 240, the hook at 320, the question card
   in the band from 640. Captions come back at frame 57 rather than waiting for
