@@ -23,17 +23,32 @@ import { cues, emphasis, phrases, type Cue, type Sfx } from "./data/questions";
 export const FPS = 30;
 export const SOURCE_DURATION = 45.09;
 
+/**
+ * Global speed-up. The pauses in this take are only 6.9 s all told, so cutting
+ * them as hard as they take still lands at 40 s — the last 5 s to reach the
+ * 35 s cap have to come from tempo. Remotion sends `playbackRate` through
+ * ffmpeg's `atempo`, so the voice keeps its pitch.
+ */
+export const RATE = 1.16;
+
+/**
+ * Frames advance RATE source frames each, so every source-second mapping runs
+ * at this rate rather than at FPS. Passing it to both `buildClips` and
+ * `makeSrcToFrame` is what keeps clip lengths and the caption timing agreeing.
+ */
+const PLAY_FPS = FPS / RATE;
+
 const raw = spansJson.spans as [number, number][];
 export const spans: [number, number][] = raw.map(([a, b]) => [
   a,
   Math.min(b, SOURCE_DURATION),
 ]);
 
-export const clips: Clip[] = buildClips(spans, FPS);
+export const clips: Clip[] = buildClips(spans, PLAY_FPS);
 export const totalFrames = clips.reduce((n, c) => n + c.durationInFrames, 0);
 
 /** Source seconds -> timeline frame, collapsing the pauses that were cut. */
-export const srcToFrame = makeSrcToFrame(clips, FPS);
+export const srcToFrame = makeSrcToFrame(clips, PLAY_FPS);
 
 /** Timeline frames where a jump cut lands, for the kick on the picture. */
 export const cutFrames = clips.slice(1).map((c) => c.from);

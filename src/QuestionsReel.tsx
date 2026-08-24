@@ -32,6 +32,7 @@ import {
   cueWindow,
   cutFrames,
   FPS,
+  RATE,
   frameCues,
   lines,
   SCENE_FRAMES,
@@ -81,22 +82,45 @@ const Facecam: React.FC = () => {
   const settle = spring({
     frame: frame - lastCutAtOrBefore(frame),
     fps,
-    config: { damping: 16, stiffness: 170, mass: 0.6 },
+    config: { damping: 15, stiffness: 190, mass: 0.55 },
   });
-  const kick = frame < cutFrames[0] ? 1 : 0.974 + settle * 0.026;
+  const kick = frame < cutFrames[0] ? 1 : 0.964 + settle * 0.036;
+
+  // Which clip we are inside, so the push can restart with each one.
+  let index = 0;
+  for (let i = clips.length - 1; i >= 0; i--) {
+    if (frame >= clips[i].from) {
+      index = i;
+      break;
+    }
+  }
+  const clip = clips[index];
+  // A slow push, alternating in and out so two clips in a row never drift the
+  // same way — the camera never moves in this take, and a static frame under a
+  // fast cut reads as a freeze.
+  const dir = index % 2 === 0 ? 1 : -1;
+  const push = interpolate(
+    frame - clip.from,
+    [0, clip.durationInFrames],
+    dir > 0 ? [1.0, 1.05] : [1.05, 1.0],
+    { extrapolateRight: "clamp" },
+  );
 
   return (
-    <AbsoluteFill style={{ transform: `scale(${kick})`, transformOrigin: "50% 42%" }}>
-      {clips.map((clip, i) => (
+    <AbsoluteFill
+      style={{ transform: `scale(${kick * push})`, transformOrigin: "50% 42%" }}
+    >
+      {clips.map((c, i) => (
         <Sequence
           key={`clip-${i}`}
-          from={clip.from}
-          durationInFrames={clip.durationInFrames}
+          from={c.from}
+          durationInFrames={c.durationInFrames}
           layout="none"
         >
           <OffthreadVideo
             src={staticFile("talk7.mp4")}
-            trimBefore={Math.round(clip.srcFrom * FPS)}
+            trimBefore={Math.round(c.srcFrom * FPS)}
+            playbackRate={RATE}
             muted
             toneMapped={false}
             style={{
@@ -147,7 +171,14 @@ const SceneWipe: React.FC<{ length: number; children: React.ReactNode }> = ({
   );
 };
 
-export const HOOK_FRAMES = 63;   // 2.1 s
+export const HOOK_FRAMES = 96;   // 3.2 s — it now overlaps the first question
+
+/**
+ * Captions come back before the hook leaves. The first phrase is the hook said
+ * out loud, so nothing is lost by covering it, and the question underneath gets
+ * its own caption from the moment it appears.
+ */
+export const CAPTIONS_FROM = 57;
 
 /**
  * The opening promise, in a framed box on the upper part of the screen — the
@@ -175,7 +206,9 @@ const HookCard: React.FC = () => {
       <AbsoluteFill
         style={{
           background:
-            "linear-gradient(180deg, rgba(8,8,10,0.72) 0%, rgba(8,8,10,0.5) 46%, rgba(8,8,10,0) 72%)",
+            // clears by 30 % of the height, above the band the scenes draw in,
+            // so the hook can sit over the first question without dimming it
+            "linear-gradient(180deg, rgba(8,8,10,0.78) 0%, rgba(8,8,10,0.52) 18%, rgba(8,8,10,0) 30%)",
           opacity: 1 - out,
         }}
       />
@@ -243,8 +276,6 @@ const HookCard: React.FC = () => {
 };
 
 export const QuestionsReel: React.FC = () => {
-  const frame = useCurrentFrame();
-
   return (
     <AbsoluteFill style={{ backgroundColor: theme.ink }}>
       <Facecam />
@@ -268,7 +299,7 @@ export const QuestionsReel: React.FC = () => {
           lines={lines}
           size={60}
           bottom={300}
-          hideBefore={HOOK_FRAMES}
+          hideBefore={CAPTIONS_FROM}
         />
       </AbsoluteFill>
 
@@ -277,8 +308,10 @@ export const QuestionsReel: React.FC = () => {
       </Sequence>
 
       {/* ------------------------------------------------------------ audio */}
-      {/* the voice is cut on the same spans as the picture, so a trimmed pause
-          removes image and sound together */}
+      {/* The voice is cut on the same spans as the picture. Its file already
+          carries the speed-up (build-voice.py's VOICE_TEMPO), so it is trimmed
+          in its own sped timebase — srcFrom / RATE — and gets no playbackRate;
+          the video is the one Remotion retimes. */}
       {clips.map((clip, i) => (
         <Sequence
           key={`voice-${i}`}
@@ -288,7 +321,7 @@ export const QuestionsReel: React.FC = () => {
         >
           <Audio
             src={staticFile("voice7.m4a")}
-            trimBefore={Math.round(clip.srcFrom * FPS)}
+            trimBefore={Math.round((clip.srcFrom / RATE) * FPS)}
             volume={1}
           />
         </Sequence>
@@ -320,17 +353,6 @@ export const QuestionsReel: React.FC = () => {
         }
       />
 
-      {/* a clean first frame: no flash, just the picture settling in */}
-      <AbsoluteFill
-        style={{
-          zIndex: 70,
-          background: theme.ink,
-          opacity: interpolate(frame, [0, 8], [1, 0], {
-            extrapolateRight: "clamp",
-          }),
-          pointerEvents: "none",
-        }}
-      />
     </AbsoluteFill>
   );
 };

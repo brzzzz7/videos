@@ -83,14 +83,14 @@ export const cues: Cue[] = [
     scene: { kind: "ask", index: "question 01", question: "« ça pousse plus vite\nsi je coupe ? »" },
     sfx: "pop",
   },
-  { at: 6.88, until: 11.30, scene: { kind: "genetics" }, sfx: "chime" },
+  { at: 6.88, until: 11.05, scene: { kind: "genetics" }, sfx: "chime" },
   {
     at: 13.44,
     until: 15.60,
     scene: { kind: "ask", index: "question 02", question: "« pourquoi ça frise\nd'un seul côté ? »" },
     sfx: "swoosh",
   },
-  { at: 17.40, until: 21.80, scene: { kind: "scalp" }, sfx: "marimba" },
+  { at: 17.40, until: 21.40, scene: { kind: "scalp" }, sfx: "marimba" },
   {
     at: 23.60,
     until: 27.05,

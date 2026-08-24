@@ -11,7 +11,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Solutions`** — hair loss, 73 s | `renders/reel-solutions-1080x1920.mp4` | a voice recording + `public/cta-chair.mp4` |
 | **`Price`** — what 35 € pays for, 57 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
 | **`Stories`** — 3 client horror stories, 47 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
-| **`Questions`** — the "worst" questions to ask, 42 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
+| **`Questions`** — the "worst" questions to ask, 35 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -255,6 +255,26 @@ field types itself.
   crown itself and the text under it.
 - Sound was properly recorded this time (−20.3 LUFS, 21.4 dB of SNR), so it
   takes the `clean` chain rather than `rescue`.
+- **Getting to 35 s took tempo, not just cutting.** The pauses in this take add
+  up to 6.9 s all told, so tightening them as hard as they take (0.2 s → 0.08 s,
+  4.8 s out across 16 clips) still lands at 40 s. The remaining 5 s come from
+  `RATE = 1.16` in `src/questions.ts`: `buildClips` and `makeSrcToFrame` are both
+  handed `FPS / RATE`, so clip lengths and caption timing stay in agreement, and
+  the video track carries `playbackRate`. The voice is retimed in the file
+  instead (`VOICE_TEMPO=1.16` on `build-voice.py`, which is `atempo`, so the
+  pitch is unchanged) and trimmed in its own sped timebase — one checkable
+  timebase rather than two mechanisms. Verified by cross-correlating each clip
+  against its predicted position: all 16 within 0.06 s, no accumulating drift,
+  and two facecam frames matched back to the source land within 3 frames.
+- The opening fade is gone — frame 0 is the picture.
+- **The hook now outlives the first question.** It holds 3.2 s and overlaps the
+  first question card, which works because the scrim was tightened to clear by
+  30 % of the height, above the band the scenes draw in; captions come back at
+  frame 57 rather than waiting for the hook, since the first phrase is the hook
+  said out loud.
+- Each facecam clip carries a slow push, alternating in and out so two in a row
+  never drift the same way. The camera never moves in this take, and a static
+  frame under a fast cut reads as a freeze.
 
 #### A trap worth knowing
 

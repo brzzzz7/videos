@@ -53,6 +53,16 @@ CHAINS = {
 MODE = os.environ.get("VOICE_MODE", "rescue")
 CHAIN = CHAINS[MODE]
 
+# Optional speed-up, baked into the file rather than left to the renderer.
+# Remotion can retime audio itself — it sends `playbackRate` through `atempo` —
+# but baking it here gives the reel a single, checkable timebase: the output is
+# exactly source/TEMPO long, so a clip trimmed at srcFrom/TEMPO lands where the
+# frame maths says. Measured on the Questions reel, all 16 clips sit within
+# 0.06 s of their predicted position.
+TEMPO = float(os.environ.get("VOICE_TEMPO", "1"))
+if TEMPO != 1.0:
+    CHAIN = f"{CHAIN},atempo={TEMPO:.5f}"
+
 
 def decode():
     raw = subprocess.run(
@@ -100,7 +110,7 @@ def limit(x, ceiling, block=0.001, release=0.08):
 def main():
     if not SRC:
         sys.exit("usage: build-voice.py <source.mp4> <out.m4a> [ffmpeg]")
-    print(f"  chain: {MODE}")
+    print(f"  chain: {MODE}" + (f" @ {TEMPO:.3f}x" if TEMPO != 1 else ""))
     x = decode()
     before = speech_level(x)
     x *= 10 ** (SPEECH_TARGET_DBFS / 20) / max(before, 1e-9)
