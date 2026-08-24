@@ -267,11 +267,16 @@ field types itself.
   against its predicted position: all 16 within 0.06 s, no accumulating drift,
   and two facecam frames matched back to the source land within 3 frames.
 - The opening fade is gone — frame 0 is the picture.
-- **The hook now outlives the first question.** It holds 3.2 s and overlaps the
-  first question card, which works because the scrim was tightened to clear by
-  30 % of the height, above the band the scenes draw in; captions come back at
-  frame 57 rather than waiting for the hook, since the first phrase is the hook
-  said out loud.
+- **The hook is the one thing not set in Montserrat.** Anton — condensed, heavy,
+  uppercase — reads as a different voice next to the captions, which is what a
+  hook is for. No card and no border: it is held up by a warm bloom, a heavy
+  face and a gold marker that swipes through "me demander", with the words
+  flipping to ink exactly as far as the bar has run (two copies of the line, the
+  ink one clipped to the swipe).
+- **It outlives the first question card**, holding 3.2 s, so the top of the frame
+  is shared: the scene's index chip at 240, the hook at 320, the question card
+  in the band from 640. Captions come back at frame 57 rather than waiting for
+  the hook, since the first phrase is the hook said out loud.
 - Each facecam clip carries a slow push, alternating in and out so two in a row
   never drift the same way. The camera never moves in this take, and a static
   frame under a fast cut reads as a freeze.

@@ -13,7 +13,7 @@ import {
 
 import "./fonts";
 import { CaptionsMontserrat } from "./components/CaptionsMontserrat";
-import { SANS } from "./fonts";
+import { DISPLAY } from "./fonts";
 import { Grain, Vignette } from "./components/Grain";
 import {
   Ask,
@@ -181,94 +181,153 @@ export const HOOK_FRAMES = 96;   // 3.2 s — it now overlaps the first question
 export const CAPTIONS_FROM = 57;
 
 /**
- * The opening promise, in a framed box on the upper part of the screen — the
- * dim is a gradient over the top third only, so the facecam stays readable
- * underneath instead of sitting behind a full-frame scrim.
+ * The opening hook, over the top of the frame.
+ *
+ * No card and no border: it sits straight on the picture, held up by a warm
+ * glow, a heavy face and a marker swipe rather than by a box. Anton is used
+ * here and nowhere else in the reel — a condensed display face next to the
+ * Montserrat captions reads as a different voice, which is the point of a hook.
  */
 const HookCard: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const enter = spring({
-    frame,
-    fps,
-    config: { damping: 20, stiffness: 130, mass: 0.7 },
+  const pop = (delay: number) =>
+    spring({
+      frame: frame - delay,
+      fps,
+      config: { damping: 13, stiffness: 200, mass: 0.6 },
+    });
+
+  const eyebrow = pop(2);
+  const first = pop(7);
+  const second = pop(14);
+  // the swipe runs through "me demander" once the line has landed
+  const swipe = interpolate(frame, [22, 34], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
   });
   const out = interpolate(frame, [HOOK_FRAMES - 12, HOOK_FRAMES], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const alpha = enter * (1 - out);
+  // never entirely still, so it holds the eye for its three seconds
+  const float = Math.sin(frame / 22) * 5;
+
+  const display = {
+    fontFamily: DISPLAY,
+    fontWeight: 400,
+    textTransform: "uppercase",
+    lineHeight: 0.94,
+    letterSpacing: -1,
+  } as const;
 
   return (
-    <AbsoluteFill style={{ zIndex: 65 }}>
-      {/* only the top of the frame is dimmed, just enough to seat the box */}
+    <AbsoluteFill style={{ zIndex: 65, opacity: 1 - out }}>
+      {/* the only backing is light: a warm bloom and a dip at the very top */}
       <AbsoluteFill
         style={{
           background:
-            // clears by 30 % of the height, above the band the scenes draw in,
-            // so the hook can sit over the first question without dimming it
-            "linear-gradient(180deg, rgba(8,8,10,0.78) 0%, rgba(8,8,10,0.52) 18%, rgba(8,8,10,0) 30%)",
-          opacity: 1 - out,
+            "radial-gradient(80% 30% at 50% 25%, rgba(255,201,138,0.26) 0%, rgba(255,201,138,0) 70%), linear-gradient(180deg, rgba(8,8,10,0.7) 0%, rgba(8,8,10,0.44) 22%, rgba(8,8,10,0) 36%)",
         }}
       />
+
       <div
         style={{
           position: "absolute",
-          top: 190,
-          left: 70,
-          right: 70,
-          padding: "46px 44px 48px",
-          borderRadius: 36,
-          border: `4px solid ${theme.warm}`,
-          background: "rgba(10,10,13,0.62)",
-          boxShadow: "0 30px 90px rgba(0,0,0,0.6)",
+          // Seated between the scene's index chip (which sits at 240) and the
+          // band the scenes draw in (from 640): the hook outlives the first
+          // question card now, so the two have to share the top of the frame
+          // rather than land on each other.
+          top: 320,
+          left: 62,
+          right: 62,
           textAlign: "center",
-          transform: `translateY(${(1 - enter) * -34 - out * 18}px) scale(${
-            0.93 + enter * 0.07
-          })`,
-          opacity: alpha,
+          transform: `translateY(${float - out * 26}px)`,
         }}
       >
         <div
           style={{
-            fontFamily: SANS,
-            fontWeight: 700,
-            fontSize: 108,
-            lineHeight: 1.02,
-            letterSpacing: -3.5,
-            color: theme.paper,
-            textShadow: "0 4px 18px rgba(0,0,0,0.55)",
+            ...display,
+            fontSize: 46,
+            letterSpacing: 10,
+            color: theme.warm,
+            opacity: eyebrow,
+            transform: `translateY(${(1 - eyebrow) * -18}px)`,
+            textShadow: "0 2px 18px rgba(0,0,0,0.6)",
           }}
         >
-          {hook.big}
+          {hook.eyebrow}
         </div>
+
         <div
           style={{
-            margin: "22px auto 0",
-            width: 220,
-            height: 7,
-            borderRadius: 999,
-            background: theme.warm,
-            transform: `scaleX(${interpolate(frame, [8, 22], [0, 1], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            })})`,
-          }}
-        />
-        <div
-          style={{
-            marginTop: 22,
-            fontFamily: SANS,
-            fontWeight: 600,
-            fontSize: 42,
-            lineHeight: 1.22,
-            letterSpacing: -0.6,
-            color: "rgba(255,255,255,0.92)",
-            textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+            ...display,
+            marginTop: 18,
+            fontSize: 104,
+            color: theme.paper,
+            opacity: first,
+            transform: `translateY(${(1 - first) * 26}px) scale(${
+              0.88 + first * 0.12
+            })`,
+            textShadow:
+              "0 6px 30px rgba(0,0,0,0.75), 0 2px 6px rgba(0,0,0,0.6)",
           }}
         >
-          {hook.small}
+          {hook.line1}
+        </div>
+
+        {/* the swipe: a warm bar wipes across and the text flips to ink on it */}
+        <div
+          style={{
+            position: "relative",
+            display: "inline-block",
+            marginTop: 10,
+            padding: "6px 18px",
+            opacity: second,
+            transform: `translateY(${(1 - second) * 26}px) scale(${
+              0.88 + second * 0.12
+            })`,
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 14,
+              background: `linear-gradient(90deg, ${theme.goldDeep}, ${theme.warm})`,
+              transform: `scaleX(${swipe})`,
+              transformOrigin: "0% 50%",
+              boxShadow: "0 10px 40px rgba(255,201,138,0.35)",
+            }}
+          />
+          <div
+            style={{
+              ...display,
+              position: "relative",
+              fontSize: 136,
+              color: theme.paper,
+              textShadow:
+                "0 6px 30px rgba(0,0,0,0.75), 0 2px 6px rgba(0,0,0,0.6)",
+            }}
+          >
+            {hook.line2}
+          </div>
+          {/* the same words in ink, revealed exactly as far as the bar has run */}
+          <div
+            style={{
+              ...display,
+              position: "absolute",
+              top: 6,
+              left: 18,
+              right: 18,
+              fontSize: 136,
+              color: "#171310",
+              clipPath: `inset(0 ${(1 - swipe) * 100}% 0 0)`,
+            }}
+          >
+            {hook.line2}
+          </div>
         </div>
       </div>
     </AbsoluteFill>

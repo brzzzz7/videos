@@ -101,7 +101,14 @@ export const cues: Cue[] = [
   { at: 39.40, until: 45.09, scene: { kind: "cta" }, sfx: "lift" },
 ];
 
+/**
+ * The hook plays the curiosity gap rather than announcing the list: the payoff
+ * of the reel is that none of these questions is stupid, so the opening leans on
+ * the thing stopping you asking them. Set in Anton, the one place in the reel
+ * that is not Montserrat.
+ */
 export const hook = {
-  big: "les pires questions",
-  small: "que tu peux poser chez le barbier",
+  eyebrow: "3 questions",
+  line1: "ce que tu n'oses pas",
+  line2: "me demander",
 };
