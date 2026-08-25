@@ -13,7 +13,7 @@ import {
 
 import "./fonts";
 import { CaptionsMontserrat } from "./components/CaptionsMontserrat";
-import { SANS } from "./fonts";
+import { DISPLAY } from "./fonts";
 import { Grain, Vignette } from "./components/Grain";
 import {
   Appointment,
@@ -34,6 +34,7 @@ import {
   cueWindow,
   cutFrames,
   FPS,
+  RATE,
   frameCues,
   lines,
   SCENE_FRAMES,
@@ -87,22 +88,45 @@ const Facecam: React.FC = () => {
   const settle = spring({
     frame: frame - lastCutAtOrBefore(frame),
     fps,
-    config: { damping: 16, stiffness: 170, mass: 0.6 },
+    config: { damping: 15, stiffness: 190, mass: 0.55 },
   });
-  const kick = frame < cutFrames[0] ? 1 : 0.974 + settle * 0.026;
+  const kick = frame < cutFrames[0] ? 1 : 0.964 + settle * 0.036;
+
+  // Which clip we are inside, so the push can restart with each one.
+  let index = 0;
+  for (let i = clips.length - 1; i >= 0; i--) {
+    if (frame >= clips[i].from) {
+      index = i;
+      break;
+    }
+  }
+  const clip = clips[index];
+  // A slow push, alternating in and out so two clips in a row never drift the
+  // same way — the camera never moves in this take, and a static frame under a
+  // fast cut reads as a freeze.
+  const dir = index % 2 === 0 ? 1 : -1;
+  const push = interpolate(
+    frame - clip.from,
+    [0, clip.durationInFrames],
+    dir > 0 ? [1.0, 1.05] : [1.05, 1.0],
+    { extrapolateRight: "clamp" },
+  );
 
   return (
-    <AbsoluteFill style={{ transform: `scale(${kick})`, transformOrigin: "50% 42%" }}>
-      {clips.map((clip, i) => (
+    <AbsoluteFill
+      style={{ transform: `scale(${kick * push})`, transformOrigin: "50% 42%" }}
+    >
+      {clips.map((c, i) => (
         <Sequence
           key={`clip-${i}`}
-          from={clip.from}
-          durationInFrames={clip.durationInFrames}
+          from={c.from}
+          durationInFrames={c.durationInFrames}
           layout="none"
         >
           <OffthreadVideo
             src={staticFile("talk6.mp4")}
-            trimBefore={Math.round(clip.srcFrom * FPS)}
+            trimBefore={Math.round(c.srcFrom * FPS)}
+            playbackRate={RATE}
             muted
             toneMapped={false}
             style={{
@@ -153,95 +177,165 @@ const SceneWipe: React.FC<{ length: number; children: React.ReactNode }> = ({
   );
 };
 
-export const HOOK_FRAMES = 63;   // 2.1 s
+export const HOOK_FRAMES = 100;   // 3.3 s — it clears before the first scene
 
 /**
- * The opening promise, in a framed box on the upper part of the screen — he
- * sits low enough in this take that the box clears his head, so the facecam
- * stays readable underneath instead of being covered by a full-frame scrim.
+ * Captions come back where phrase 0 ends, not where the hook leaves: the hook
+ * is that phrase, so it is the caption for it.
+ */
+export const CAPTIONS_FROM = 66;
+
+/**
+ * The opening hook: his own first sentence, over the top of the frame.
+ *
+ * Each part springs in as he says it, so the hook reads as the line being
+ * spoken rather than as a title card laid over it. Phrase 0 runs to frame 65,
+ * which is where the captions take over.
+ *
+ * No card and no border: it is held up by a warm glow, a heavy face and a marker
+ * swipe. Anton is used here and nowhere else in the reel — a condensed display
+ * face next to the Montserrat captions reads as a different voice, which is the
+ * point of a hook.
  */
 const HookCard: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const enter = spring({
-    frame,
-    fps,
-    config: { damping: 20, stiffness: 130, mass: 0.7 },
+  const pop = (delay: number) =>
+    spring({
+      frame: frame - delay,
+      fps,
+      config: { damping: 13, stiffness: 200, mass: 0.6 },
+    });
+
+  // Where each part of the sentence falls inside phrase 0. The numbers are its
+  // own word timings, from the same syllable-weighted pass the captions use:
+  // "j'ai demandé à mes clients" 0-26, "leurs pires souvenirs" 26-47, "chez un
+  // barbier" 47-65.
+  const first = pop(1);
+  const punch = pop(27);
+  const rest = pop(48);
+  // the marker sweeps across exactly while he says "pires souvenirs"
+  const swipe = interpolate(frame, [30, 47], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
   });
   const out = interpolate(frame, [HOOK_FRAMES - 12, HOOK_FRAMES], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const alpha = enter * (1 - out);
+  // never entirely still, so it holds the eye for its three seconds
+  const float = Math.sin(frame / 22) * 5;
+
+  const display = {
+    fontFamily: DISPLAY,
+    fontWeight: 400,
+    textTransform: "uppercase",
+    lineHeight: 0.94,
+    letterSpacing: -1,
+  } as const;
+
+  const shadow =
+    "0 6px 30px rgba(0,0,0,0.75), 0 2px 6px rgba(0,0,0,0.6)";
 
   return (
-    <AbsoluteFill style={{ zIndex: 65 }}>
-      {/* only the top of the frame is dimmed, just enough to seat the box */}
+    <AbsoluteFill style={{ zIndex: 65, opacity: 1 - out }}>
+      {/* the only backing is light: a warm bloom and a dip at the very top */}
       <AbsoluteFill
         style={{
           background:
-            "linear-gradient(180deg, rgba(8,8,10,0.72) 0%, rgba(8,8,10,0.5) 46%, rgba(8,8,10,0) 72%)",
-          opacity: 1 - out,
+            "radial-gradient(80% 30% at 50% 25%, rgba(255,201,138,0.26) 0%, rgba(255,201,138,0) 70%), linear-gradient(180deg, rgba(8,8,10,0.7) 0%, rgba(8,8,10,0.44) 22%, rgba(8,8,10,0) 36%)",
         }}
       />
+
       <div
         style={{
           position: "absolute",
-          top: 190,
-          left: 70,
-          right: 70,
-          padding: "46px 44px 48px",
-          borderRadius: 36,
-          border: `4px solid ${theme.warm}`,
-          background: "rgba(10,10,13,0.62)",
-          boxShadow: "0 30px 90px rgba(0,0,0,0.6)",
+          top: 320,
+          left: 62,
+          right: 62,
           textAlign: "center",
-          transform: `translateY(${(1 - enter) * -34 - out * 18}px) scale(${
-            0.93 + enter * 0.07
-          })`,
-          opacity: alpha,
+          transform: `translateY(${float - out * 26}px)`,
         }}
       >
         <div
           style={{
-            fontFamily: SANS,
-            fontWeight: 700,
-            fontSize: 108,
-            lineHeight: 1.02,
-            letterSpacing: -3.5,
-            color: theme.paper,
-            textShadow: "0 4px 18px rgba(0,0,0,0.55)",
+            ...display,
+            fontSize: 54,
+            letterSpacing: 4,
+            color: theme.warm,
+            opacity: first,
+            transform: `translateY(${(1 - first) * -18}px)`,
+            textShadow: "0 2px 18px rgba(0,0,0,0.6)",
           }}
         >
-          {hook.big}
+          {hook.first}
         </div>
+
+        {/* the swipe: a warm bar wipes across and the text flips to ink on it */}
         <div
           style={{
-            margin: "22px auto 0",
-            width: 220,
-            height: 7,
-            borderRadius: 999,
-            background: theme.warm,
-            transform: `scaleX(${interpolate(frame, [8, 22], [0, 1], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            })})`,
-          }}
-        />
-        <div
-          style={{
-            marginTop: 22,
-            fontFamily: SANS,
-            fontWeight: 600,
-            fontSize: 42,
-            lineHeight: 1.22,
-            letterSpacing: -0.6,
-            color: "rgba(255,255,255,0.92)",
-            textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+            position: "relative",
+            display: "inline-block",
+            marginTop: 14,
+            padding: "6px 18px",
+            opacity: punch,
+            transform: `translateY(${(1 - punch) * 26}px) scale(${
+              0.88 + punch * 0.12
+            })`,
           }}
         >
-          {hook.small}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: 14,
+              background: `linear-gradient(90deg, ${theme.goldDeep}, ${theme.warm})`,
+              transform: `scaleX(${swipe})`,
+              transformOrigin: "0% 50%",
+              boxShadow: "0 10px 40px rgba(255,201,138,0.35)",
+            }}
+          />
+          <div
+            style={{
+              ...display,
+              position: "relative",
+              fontSize: 104,
+              color: theme.paper,
+              textShadow: shadow,
+            }}
+          >
+            {hook.punch}
+          </div>
+          {/* the same words in ink, revealed exactly as far as the bar has run */}
+          <div
+            style={{
+              ...display,
+              position: "absolute",
+              top: 6,
+              left: 18,
+              right: 18,
+              fontSize: 104,
+              color: "#171310",
+              clipPath: `inset(0 ${(1 - swipe) * 100}% 0 0)`,
+            }}
+          >
+            {hook.punch}
+          </div>
+        </div>
+
+        <div
+          style={{
+            ...display,
+            marginTop: 14,
+            fontSize: 66,
+            color: "rgba(255,255,255,0.94)",
+            opacity: rest,
+            transform: `translateY(${(1 - rest) * 20}px)`,
+            textShadow: shadow,
+          }}
+        >
+          {hook.rest}
         </div>
       </div>
     </AbsoluteFill>
@@ -249,8 +343,6 @@ const HookCard: React.FC = () => {
 };
 
 export const StoriesReel: React.FC = () => {
-  const frame = useCurrentFrame();
-
   return (
     <AbsoluteFill style={{ backgroundColor: theme.ink }}>
       <Facecam />
@@ -274,7 +366,7 @@ export const StoriesReel: React.FC = () => {
           lines={lines}
           size={60}
           bottom={300}
-          hideBefore={HOOK_FRAMES}
+          hideBefore={CAPTIONS_FROM}
         />
       </AbsoluteFill>
 
@@ -283,8 +375,10 @@ export const StoriesReel: React.FC = () => {
       </Sequence>
 
       {/* ------------------------------------------------------------ audio */}
-      {/* the voice is cut on the same spans as the picture, so a trimmed pause
-          removes image and sound together */}
+      {/* The voice is cut on the same spans as the picture. Its file already
+          carries the speed-up (build-voice.py's VOICE_TEMPO), so it is trimmed
+          in its own sped timebase — srcFrom / RATE — and gets no playbackRate;
+          the video is the one Remotion retimes. */}
       {clips.map((clip, i) => (
         <Sequence
           key={`voice-${i}`}
@@ -294,7 +388,7 @@ export const StoriesReel: React.FC = () => {
         >
           <Audio
             src={staticFile("voice6.m4a")}
-            trimBefore={Math.round(clip.srcFrom * FPS)}
+            trimBefore={Math.round((clip.srcFrom / RATE) * FPS)}
             volume={1}
           />
         </Sequence>
@@ -326,17 +420,6 @@ export const StoriesReel: React.FC = () => {
         }
       />
 
-      {/* a clean first frame: no flash, just the picture settling in */}
-      <AbsoluteFill
-        style={{
-          zIndex: 70,
-          background: theme.ink,
-          opacity: interpolate(frame, [0, 8], [1, 0], {
-            extrapolateRight: "clamp",
-          }),
-          pointerEvents: "none",
-        }}
-      />
     </AbsoluteFill>
   );
 };

@@ -90,7 +90,14 @@ export const cues: Cue[] = [
   { at: 45.23, until: 49.60, scene: { kind: "cta" }, sfx: "lift" },
 ];
 
+/**
+ * The hook is his own opening line, word for word — phrase 0 of the transcript.
+ * It is split in three so each part can land as he says it: "j'ai demandé à mes
+ * clients" runs to frame 26, "leurs pires souvenirs" to 47, the tail to 65.
+ * Set in Anton, the one place in the reel that is not Montserrat.
+ */
 export const hook = {
-  big: "3 horreurs vécues",
-  small: "chez le barbier — racontées par mes clients",
+  first: "j'ai demandé à mes clients",
+  punch: "leurs pires souvenirs",
+  rest: "chez un barbier",
 };

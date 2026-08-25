@@ -10,7 +10,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Split`** — same script, split-screen, 63 s | `renders/reel-split-1080x1920.mp4` | `public/talk3.mp4` (derushed take) |
 | **`Solutions`** — hair loss, 73 s | `renders/reel-solutions-1080x1920.mp4` | a voice recording + `public/cta-chair.mp4` |
 | **`Price`** — what 35 € pays for, 57 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
-| **`Stories`** — 3 client horror stories, 47 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
+| **`Stories`** — 3 client horror stories, 40 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
 | **`Questions`** — the "worst" questions to ask, 35 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
@@ -211,8 +211,21 @@ never gives the frame back stops illustrating the video and becomes it.
   preset on both counts — 9.7 dB of SNR against 10.6, and 2.4 % of hiss above
   6 kHz against 0.3 % — so `rescue` is what ships and the tuned chain was
   dropped.
-- **The take was already tight**: 6.1 s of silence in 49.6 s, none of it longer
-  than 0.74 s, so the same 0.35 s → 0.16 s tightening only recovers 2.5 s.
+- **Getting to 40 s took tempo as well as cutting.** The take is tight — 6.1 s
+  of silence in 49.6 s, none of it longer than 0.74 s — so even at 0.2 s → 0.08 s
+  (4.2 s out, across 15 clips) it lands at 45 s. `RATE = 1.15` supplies the rest,
+  the same mechanism as `Questions`: `buildClips` and `makeSrcToFrame` both take
+  `FPS / RATE`, the video carries `playbackRate`, and the voice is retimed in its
+  own file (`VOICE_TEMPO=1.15`, i.e. `atempo`, so the pitch is unchanged) and
+  trimmed in that sped timebase. Verified the same way: all 15 clips within
+  0.055 s of their predicted position, and two facecam frames matched back to the
+  source land within 3 frames.
+- **The hook is his own opening line**, split in three on its own word timings —
+  "j'ai demandé à mes clients" to frame 26, "leurs pires souvenirs" to 47, "chez
+  un barbier" to 65 — with the marker sweeping while he says "pires souvenirs".
+  Anton, no card, no border. Captions start at frame 66, where the phrase ends.
+- No opening fade, and each facecam clip carries a slow push, alternating
+  direction, with a punchier kick on the cuts.
 - **Scenes** (`components/illos/stories.tsx`): the head that loses its hair as he
   says "complètement rasé", −2 cm against 3× too short, a clock running two
   hours, a 14:00 appointment reached at 16:05, a struck-out speech bubble, the

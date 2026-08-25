@@ -27,17 +27,33 @@ import { cues, emphasis, phrases, type Cue, type Sfx } from "./data/stories";
 export const FPS = 30;
 export const SOURCE_DURATION = 49.6;
 
+/**
+ * Global speed-up. The pauses in this take come to 6.1 s, so cutting them as
+ * hard as they take still lands at 45 s — the rest of the way to the 40 s cap
+ * has to come from tempo. The voice is retimed in its own file
+ * (`VOICE_TEMPO=1.15` on build-voice.py, which is `atempo`, so the pitch is
+ * unchanged); the video track carries `playbackRate`.
+ */
+export const RATE = 1.15;
+
+/**
+ * Frames advance RATE source frames each, so every source-second mapping runs
+ * at this rate rather than at FPS. Passing it to both `buildClips` and
+ * `makeSrcToFrame` is what keeps clip lengths and the caption timing agreeing.
+ */
+const PLAY_FPS = FPS / RATE;
+
 const raw = spansJson.spans as [number, number][];
 export const spans: [number, number][] = raw.map(([a, b]) => [
   a,
   Math.min(b, SOURCE_DURATION),
 ]);
 
-export const clips: Clip[] = buildClips(spans, FPS);
+export const clips: Clip[] = buildClips(spans, PLAY_FPS);
 export const totalFrames = clips.reduce((n, c) => n + c.durationInFrames, 0);
 
 /** Source seconds -> timeline frame, collapsing the pauses that were cut. */
-export const srcToFrame = makeSrcToFrame(clips, FPS);
+export const srcToFrame = makeSrcToFrame(clips, PLAY_FPS);
 
 /** Timeline frames where a jump cut lands, for the kick on the picture. */
 export const cutFrames = clips.slice(1).map((c) => c.from);
@@ -79,6 +95,19 @@ frameCues.forEach((cue, i) => {
   if (previous && cue.from < previous.to) {
     throw new Error(
       `stories: cue ${i} ("${cue.scene.kind}") starts before cue ${i - 1} ends`,
+    );
+  }
+});
+
+// A scene that leaves the frame and comes back a few frames later reads as a
+// flicker, not as a return to him. 42 frames is the shortest gap that reads.
+const MIN_FACECAM = 42;
+frameCues.forEach((cue, i) => {
+  const previous = frameCues[i - 1];
+  if (previous && cue.from - previous.to < MIN_FACECAM) {
+    throw new Error(
+      `stories: only ${cue.from - previous.to} frames of facecam between cue ` +
+        `${i - 1} ("${previous.scene.kind}") and cue ${i} ("${cue.scene.kind}")`,
     );
   }
 });
