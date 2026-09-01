@@ -12,6 +12,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Price`** — what 35 € pays for, 57 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
 | **`Stories`** — 3 client horror stories, 40 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
 | **`Questions`** — the "worst" questions to ask, 35 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
+| **`Style`** — is the trending cut for you, 21 s | `renders/reel-coupe-1080x1920.mp4` | `public/talk8.mp4` + `public/cut-broll.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -25,6 +26,7 @@ cross-dissolves for `Morning`.
 | Audio (Price) | `voice5.m4a` (speech, from the separate mp3), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Stories) | `voice6.m4a` (speech, recovered from a −39 LUFS camera track), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Questions) | `voice7.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
+| Audio (Style) | `voice8.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
 
 ## Commands
@@ -299,6 +301,29 @@ field types itself.
 - Each facecam clip carries a slow push, alternating in and out so two in a row
   never drift the same way. The camera never moves in this take, and a static
   frame under a fast cut reads as a freeze.
+
+### `Style` — is the trending cut actually for you
+
+The shortest of them: 26 s of take, 21 s once the pauses go. Same grammar as
+`Stories` and `Questions` — scene kit, hook from his own opening line, no
+opening fade, push on every facecam clip — with one thing they do not have.
+
+- **He sent a clip to insert**, and it arrived as a phone screen recording of a
+  TikTok. `scripts/prepare-broll.sh` crops the app chrome out — status bar,
+  search field, engagement column, another creator's handle, comment box —
+  leaving a 922×1640 window that is 9:16 exactly and centred on the face. It is
+  muted rather than ducked: the original carries someone else's voice and music.
+  A warm "la coupe en question" tag rides on it so the cut away from him reads
+  as a citation rather than a jump.
+- It lands on "cette coupe est partout", which is the one moment where showing
+  the actual cut beats drawing anything.
+- **No speed-up here.** The other two needed tempo to meet a length cap; this
+  one is already short, so `RATE = 1` and the pauses do all the work.
+- The two face shapes in the morphology scene are one ellipse with a varying
+  ratio, and the cut is the whole skull in dark with the face laid over it below
+  a straight fringe — drawn as a cap on top it read as a headband. The clip path
+  ids have to be id-safe: keyed on the French labels, `url(#face-fin, allongé)`
+  silently did nothing and both faces came out bald.
 
 #### A trap worth knowing
 
