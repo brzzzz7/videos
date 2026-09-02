@@ -59,26 +59,22 @@ export type Cue = {
 };
 
 /**
- * Five scenes over eighteen seconds, the first of them the clip he sent: it
- * lands on "cette coupe est partout", which is the one moment in the reel where
+ * Five scenes over twenty seconds, the first of them the clip he sent: it lands
+ * on "cette coupe est partout", which is the one moment in the reel where
  * showing the actual cut beats drawing anything.
- *
- * At this length every cue is within a few frames of the minimum facecam gap,
- * so these numbers are the result of solving against the cut rather than round
- * choices — moving one by a tenth of a second moves the next two.
  */
 export const cues: Cue[] = [
-  { at: 2.20, until: 4.05, scene: { kind: "broll" }, sfx: "swoosh" },
-  { at: 6.67, until: 8.30, scene: { kind: "styling" }, sfx: "pop" },
-  { at: 10.60, until: 16.20, scene: { kind: "morpho" }, sfx: "chime" },
+  { at: 2.20, until: 4.50, scene: { kind: "broll" }, sfx: "swoosh" },
+  { at: 6.35, until: 8.05, scene: { kind: "styling" }, sfx: "pop" },
+  { at: 10.10, until: 16.20, scene: { kind: "morpho" }, sfx: "chime" },
   { at: 18.90, until: 21.00, scene: { kind: "adapt" }, sfx: "marimba" },
   { at: 23.20, until: 25.79, scene: { kind: "cta" }, sfx: "lift" },
 ];
 
 /**
  * The hook is his own opening line — phrase 0, split on its own word timings:
- * "cette coupe" runs to frame 12, "est partout en ce moment" to 35, and the
- * question to 68. The last part is trimmed to fit the frame ("mais faite pour
+ * "cette coupe" runs to frame 15, "est partout en ce moment" to 40, and the
+ * question to 87. The last part is trimmed to fit the frame ("mais faite pour
  * tout le monde ?" for "mais est-ce qu'elle est vraiment faite pour tout le
  * monde ?"); the caption underneath carries it in full.
  */

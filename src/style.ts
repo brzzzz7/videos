@@ -28,13 +28,11 @@ export const FPS = 30;
 export const SOURCE_DURATION = 26.17;
 
 /**
- * Global speed-up. Cutting the pauses as hard as they take gets this take from
- * 26 s to 19.4 s across 14 clips, which is most of the pace; the last second
- * and a half to reach the 18 s cap comes from tempo. The voice is retimed in
- * its own file (`VOICE_TEMPO=1.10` on build-voice.py, i.e. `atempo`, so the
- * pitch is unchanged); the video track carries `playbackRate`.
+ * No speed-up on this one. The other two reels needed tempo to meet a length
+ * cap; this take is 26 s and comes in at 21 s on pause-cutting alone, so
+ * speeding it up would only make a short reel shorter.
  */
-export const RATE = 1.1;
+export const RATE = 1;
 
 /**
  * Frames advance RATE source frames each, so every source-second mapping runs
