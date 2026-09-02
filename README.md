@@ -13,7 +13,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Stories`** — 3 client horror stories, 40 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
 | **`Questions`** — the "worst" questions to ask, 35 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
 | **`Style`** — is the trending cut for you, 21 s | `renders/reel-coupe-1080x1920.mp4` | `public/talk8.mp4` + `public/cut-broll.mp4` |
-| **`Errors`** — 3 mistakes he sees every day, 29 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
+| **`Errors`** — 3 mistakes he sees every day, 25 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -343,8 +343,16 @@ Same grammar again; two things about this take shaped it.
 - `clean` beat `rescue` on this one despite the take sitting at −28 LUFS: the
   heavier chain came back thin and hissy (26 % bass, 33 % high, 11 % air against
   41/19/4), so the balance decided it rather than the input level.
-- No speed-up — a cap is what earned it on the two long reels, and 31 s comes in
-  at 29 s on pause-cutting alone.
+- **Getting to 25 s took tempo as well as cutting.** The take holds only 3.8 s
+  of silence all told, so tightening to 0.15 s → 0.08 s (3.5 s out, 12 clips
+  instead of 6) still lands at 28 s. `RATE = 1.13` supplies the rest, the same
+  route as the other reels: `FPS / RATE` into `buildClips` and `makeSrcToFrame`,
+  `playbackRate` on the video, and the voice retimed in its own file
+  (`VOICE_TEMPO=1.13`) and trimmed in that timebase. Verified: all 12 clips
+  place their audio within 0.06 s of prediction, and two facecam frames matched
+  back to the source land within one frame.
+- Twice as many clips is itself most of the extra pace; the scene cues moved a
+  fraction to keep every facecam window over the 42-frame minimum.
 
 #### A trap worth knowing
 

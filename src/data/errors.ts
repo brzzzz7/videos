@@ -73,15 +73,15 @@ export type Cue = {
  */
 export const cues: Cue[] = [
   { at: 3.15, until: 5.40, scene: { kind: "counter" }, sfx: "pop" },
-  { at: 6.90, until: 11.60, scene: { kind: "wait" }, sfx: "chime" },
+  { at: 7.02, until: 11.60, scene: { kind: "wait" }, sfx: "chime" },
   { at: 13.85, until: 17.95, scene: { kind: "product" }, sfx: "swoosh" },
-  { at: 19.45, until: 23.90, scene: { kind: "trend" }, sfx: "marimba" },
+  { at: 19.72, until: 23.90, scene: { kind: "trend" }, sfx: "marimba" },
   { at: 28.34, until: 31.42, scene: { kind: "cta" }, sfx: "lift" },
 ];
 
 /**
  * The hook is his own opening line — phrase 0, split on its own word timings:
- * "il y a" runs to frame 12, "3 erreurs" to 32, the rest to 71.
+ * "il y a" runs to frame 13, "3 erreurs" to 25, the rest to 70.
  */
 export const hook = {
   first: "il y a",

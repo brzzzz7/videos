@@ -171,20 +171,20 @@ const SceneWipe: React.FC<{ length: number; children: React.ReactNode }> = ({
   );
 };
 
-export const HOOK_FRAMES = 92;   // 3.1 s — it clears before the first scene
+export const HOOK_FRAMES = 78;   // 2.6 s — it clears before the first scene
 
 /**
  * Captions come back where phrase 0 ends, not where the hook leaves: the hook
  * is that phrase, so it is the caption for it.
  */
-export const CAPTIONS_FROM = 82;
+export const CAPTIONS_FROM = 71;
 
 /**
  * The opening hook: his own first sentence, over the top of the frame.
  *
  * Each part springs in as he says it, so the hook reads as the line being
  * spoken rather than as a title card laid over it. Phrase 0 and its tail run
- * to frame 81, which is where the captions take over.
+ * to frame 70, which is where the captions take over.
  *
  * No card and no border: it is held up by a warm glow, a heavy face and a marker
  * swipe. Anton is used here and nowhere else in the reel — a condensed display
@@ -204,12 +204,12 @@ const HookCard: React.FC = () => {
 
   // Where each part of the sentence falls inside phrase 0. The numbers are its
   // own word timings, from the same syllable-weighted pass the captions use:
-  // "il y a" 0-15, "3 erreurs" 15-28, the rest to 81.
+  // "il y a" 0-13, "3 erreurs" 13-25, the rest to 70.
   const first = pop(1);
-  const punch = pop(14);
-  const rest = pop(29);
+  const punch = pop(12);
+  const rest = pop(26);
   // the marker sweeps across while he says "3 erreurs"
-  const swipe = interpolate(frame, [16, 29], [0, 1], {
+  const swipe = interpolate(frame, [14, 26], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
