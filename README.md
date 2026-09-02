@@ -13,6 +13,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Stories`** — 3 client horror stories, 40 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
 | **`Questions`** — the "worst" questions to ask, 35 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
 | **`Style`** — is the trending cut for you, 21 s | `renders/reel-coupe-1080x1920.mp4` | `public/talk8.mp4` + `public/cut-broll.mp4` |
+| **`Errors`** — 3 mistakes he sees every day, 29 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -27,6 +28,7 @@ cross-dissolves for `Morning`.
 | Audio (Stories) | `voice6.m4a` (speech, recovered from a −39 LUFS camera track), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Questions) | `voice7.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Style) | `voice8.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
+| Audio (Errors) | `voice9.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
 
 ## Commands
@@ -324,6 +326,25 @@ opening fade, push on every facecam clip — with one thing they do not have.
   a straight fringe — drawn as a cap on top it read as a headband. The clip path
   ids have to be id-safe: keyed on the French labels, `url(#face-fin, allongé)`
   silently did nothing and both faces came out bald.
+
+### `Errors` — the three he sees every day
+
+Same grammar again; two things about this take shaped it.
+
+- **He barely pauses.** `silencedetect` finds four segments across 31 s, two of
+  them nearly twelve seconds long, which is useless for caption timing. The
+  phrases come from a second pass at a 0.10 s threshold with each sub-phrase
+  transcribed on its own — twelve of them instead of four.
+- **He lists the three without stopping between them**, so scenes placed on his
+  sentence boundaries left a third of a second of facecam between items. Each
+  scene starts a beat into its item instead, which buys back a real window to
+  him every time and still lands on the content. 61 % scene, five windows to
+  camera.
+- `clean` beat `rescue` on this one despite the take sitting at −28 LUFS: the
+  heavier chain came back thin and hissy (26 % bass, 33 % high, 11 % air against
+  41/19/4), so the balance decided it rather than the input level.
+- No speed-up — a cap is what earned it on the two long reels, and 31 s comes in
+  at 29 s on pause-cutting alone.
 
 #### A trap worth knowing
 
