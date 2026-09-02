@@ -70,10 +70,14 @@ export type Cue = {
  * follow his sentences — placed that way they would leave a third of a second
  * of facecam between items, which reads as a flicker. Each one starts a beat
  * into its item instead, which buys a real window back to him every time.
+ *
+ * The counter and the wait scene were pushed later again to make room for a
+ * longer hook: it now holds four seconds and overlaps the counter, which is why
+ * that scene lost its title (see components/illos/errors.tsx).
  */
 export const cues: Cue[] = [
-  { at: 3.15, until: 5.40, scene: { kind: "counter" }, sfx: "pop" },
-  { at: 7.02, until: 11.60, scene: { kind: "wait" }, sfx: "chime" },
+  { at: 4.10, until: 6.30, scene: { kind: "counter" }, sfx: "pop" },
+  { at: 7.90, until: 11.60, scene: { kind: "wait" }, sfx: "chime" },
   { at: 13.85, until: 17.95, scene: { kind: "product" }, sfx: "swoosh" },
   { at: 19.72, until: 23.90, scene: { kind: "trend" }, sfx: "marimba" },
   { at: 28.34, until: 31.42, scene: { kind: "cta" }, sfx: "lift" },

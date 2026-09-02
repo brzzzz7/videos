@@ -171,7 +171,7 @@ const SceneWipe: React.FC<{ length: number; children: React.ReactNode }> = ({
   );
 };
 
-export const HOOK_FRAMES = 78;   // 2.6 s — it clears before the first scene
+export const HOOK_FRAMES = 120;   // 4.0 s — it holds over the counter scene
 
 /**
  * Captions come back where phrase 0 ends, not where the hook leaves: the hook

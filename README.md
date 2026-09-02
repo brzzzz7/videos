@@ -353,6 +353,12 @@ Same grammar again; two things about this take shaped it.
   back to the source land within one frame.
 - Twice as many clips is itself most of the extra pace; the scene cues moved a
   fraction to keep every facecam window over the 42-frame minimum.
+- **The hook holds 4 s here**, longer than in the other reels, and overlaps the
+  counter scene rather than clearing it. That is what the counter losing its
+  title bought: it said "3 erreurs" under a hook already saying the same thing
+  in Anton at twice the size. The counter and the wait scene both shifted later
+  to make the room — at 25 s there was no way to have both a long hook and a
+  counter card ahead of it.
 
 #### A trap worth knowing
 

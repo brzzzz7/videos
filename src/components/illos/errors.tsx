@@ -13,11 +13,17 @@ import {
   type Beat,
 } from "./scene-kit";
 
-/** 01 · 02 · 03, with the second one flagged — he says it will be yours. */
+/**
+ * 01 · 02 · 03, with the second one flagged — he says it will be yours.
+ *
+ * No title: the hook now runs long enough to overlap this scene, and it already
+ * says "3 erreurs" in Anton at twice the size. Two of them on screen at once
+ * was one too many.
+ */
 export const Counter: React.FC = () => {
   const grow = useSpring();
   return (
-    <SceneFrame index="au programme" title="3 erreurs">
+    <SceneFrame index="au programme">
       <Stage>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 30 }}>
           <div style={{ display: "flex", gap: 26 }}>
