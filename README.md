@@ -12,7 +12,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Price`** — what 35 € pays for, 57 s | `renders/reel-prix-1080x1920.mp4` | `public/talk5.mp4` (mute) + a separate mp3 |
 | **`Stories`** — 3 client horror stories, 40 s | `renders/reel-temoignages-1080x1920.mp4` | `public/talk6.mp4` |
 | **`Questions`** — the "worst" questions to ask, 35 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
-| **`Style`** — is the trending cut for you, 21 s | `renders/reel-coupe-1080x1920.mp4` | `public/talk8.mp4` + `public/cut-broll.mp4` |
+| **`Style`** — is the trending cut for you, 18 s | `renders/reel-coupe-1080x1920.mp4` | `public/talk8.mp4` + `public/cut-broll.mp4` |
 | **`Errors`** — 3 mistakes he sees every day, 25 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
@@ -306,7 +306,7 @@ field types itself.
 
 ### `Style` — is the trending cut actually for you
 
-The shortest of them: 26 s of take, 21 s once the pauses go. Same grammar as
+The shortest of them: 26 s of take, 17.6 s on screen. Same grammar as
 `Stories` and `Questions` — scene kit, hook from his own opening line, no
 opening fade, push on every facecam clip — with one thing they do not have.
 
@@ -319,8 +319,16 @@ opening fade, push on every facecam clip — with one thing they do not have.
   as a citation rather than a jump.
 - It lands on "cette coupe est partout", which is the one moment where showing
   the actual cut beats drawing anything.
-- **No speed-up here.** The other two needed tempo to meet a length cap; this
-  one is already short, so `RATE = 1` and the pauses do all the work.
+- **Getting to 18 s.** Cutting the pauses as hard as they take does most of it —
+  6.8 s out, 14 clips instead of 8, which is also where the extra pace comes
+  from — and `RATE = 1.10` covers the last second and a half. Same route as the
+  other reels: `FPS / RATE` into `buildClips` and `makeSrcToFrame`,
+  `playbackRate` on his footage, and the voice retimed in its own file
+  (`VOICE_TEMPO=1.10`) and trimmed in that timebase. The inserted clip is not
+  retimed at all — it is its own footage, not his.
+- At this length every cue sits within a few frames of the minimum facecam gap,
+  so the numbers in `src/data/style.ts` are solved against the cut rather than
+  chosen: move one by a tenth of a second and the next two have to move too.
 - The two face shapes in the morphology scene are one ellipse with a varying
   ratio, and the cut is the whole skull in dark with the face laid over it below
   a straight fringe — drawn as a cap on top it read as a headband. The clip path

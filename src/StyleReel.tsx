@@ -171,19 +171,19 @@ const SceneWipe: React.FC<{ length: number; children: React.ReactNode }> = ({
   );
 };
 
-export const HOOK_FRAMES = 100;   // 3.3 s — it overlaps the inserted clip
+export const HOOK_FRAMES = 80;   // 2.7 s — it overlaps the inserted clip
 
 /**
  * Captions come back where phrase 0 ends, not where the hook leaves: the hook
  * is that phrase, so it is the caption for it.
  */
-export const CAPTIONS_FROM = 88;
+export const CAPTIONS_FROM = 69;
 
 /**
  * The opening hook: his own first sentence, over the top of the frame.
  *
  * Each part springs in as he says it, so the hook reads as the line being
- * spoken rather than as a title card laid over it. Phrase 0 runs to frame 87,
+ * spoken rather than as a title card laid over it. Phrase 0 runs to frame 68,
  * which is where the captions take over.
  *
  * No card and no border: it is held up by a warm glow, a heavy face and a marker
@@ -204,12 +204,12 @@ const HookCard: React.FC = () => {
 
   // Where each part of the sentence falls inside phrase 0. The numbers are its
   // own word timings, from the same syllable-weighted pass the captions use:
-  // "cette coupe" 4-15, "est partout en ce moment" 15-40, the question to 87.
-  const first = pop(4);
-  const punch = pop(16);
-  const rest = pop(41);
+  // "cette coupe" 2-12, "est partout en ce moment" 12-35, the question to 68.
+  const first = pop(2);
+  const punch = pop(12);
+  const rest = pop(35);
   // the marker sweeps across while he says "partout"
-  const swipe = interpolate(frame, [19, 33], [0, 1], {
+  const swipe = interpolate(frame, [15, 26], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
