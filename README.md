@@ -14,6 +14,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Questions`** — the "worst" questions to ask, 35 s | `renders/reel-questions-1080x1920.mp4` | `public/talk7.mp4` |
 | **`Style`** — is the trending cut for you, 21 s | `renders/reel-coupe-1080x1920.mp4` | `public/talk8.mp4` + `public/cut-broll.mp4` |
 | **`Errors`** — 3 mistakes he sees every day, 25 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
+| **`Copy`** — why he won't copy a photo, 27 s | `renders/reel-copie-1080x1920.mp4` | `public/talk10.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -29,6 +30,7 @@ cross-dissolves for `Morning`.
 | Audio (Questions) | `voice7.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Style) | `voice8.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Errors) | `voice9.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
+| Audio (Copy) | `voice10.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions), `sfx/*.m4a` (the cue-sound library) |
 
 ## Commands
@@ -359,6 +361,25 @@ Same grammar again; two things about this take shaped it.
   in Anton at twice the size. The counter and the wait scene both shifted later
   to make the room — at 25 s there was no way to have both a long hook and a
   counter card ahead of it.
+
+### `Copy` — why he won't just reproduce the photo
+
+Same grammar as the rest, and the first reel to carry his mark.
+
+- **The logo** sits top left throughout (`public/logo.png`). It arrived as white
+  strokes on transparency, so it needs no keying — but it does need a soft dark
+  drop shadow, because that corner is dark curtain for most of the reel and
+  blown-out lamp for the rest, and white on white disappears. It fades in over
+  the first half-second rather than being on frame 0, so the reel opens on the
+  picture and not on a watermark. The source PNG was 1255×1255 with the mark
+  inside a large transparent margin; it is cropped to its own bounding box so
+  the position in the corner is the position of the ink.
+- **The camera sounds carry it.** The reel is about a client showing a photo, so
+  `shutter` lands on the refusal and `snap` on the side-by-side — the sound of
+  the thing being discussed rather than a generic cue. That is what the new
+  library entries were for.
+- Long sentences again — five segments across 29 s — so the phrases come from a
+  second silence pass at 0.10 s with each sub-phrase transcribed on its own.
 
 #### A trap worth knowing
 
