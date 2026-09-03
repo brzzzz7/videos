@@ -1,0 +1,117 @@
+{
+  "source": "43f3a943-A001_08171817_C017.mp4",
+  "fps": 30,
+  "handleFrames": 8,
+  "shots": [
+    {
+      "id": "hook",
+      "head": 0.267,
+      "file": "shots/hook.mp4",
+      "framing": "mid",
+      "start": 23.45,
+      "end": 26.45,
+      "tail": 0.0,
+      "pictureStart": 23.45
+    },
+    {
+      "id": "e1a",
+      "head": 0.267,
+      "file": "shots/e1a.mp4",
+      "framing": "med",
+      "start": 37.25,
+      "end": 41.6,
+      "tail": 0.0,
+      "pictureStart": 36.0
+    },
+    {
+      "id": "e1b",
+      "head": 0.267,
+      "file": "shots/e1b.mp4",
+      "framing": "close",
+      "start": 64.25,
+      "end": 67.2,
+      "tail": 0.0,
+      "pictureStart": 64.25
+    },
+    {
+      "id": "e2a",
+      "head": 0.267,
+      "file": "shots/e2a.mp4",
+      "framing": "mid",
+      "start": 70.35,
+      "end": 74.6,
+      "tail": 0.0,
+      "pictureStart": 70.35
+    },
+    {
+      "id": "e2b",
+      "head": 0.267,
+      "file": "shots/e2b.mp4",
+      "framing": "med",
+      "start": 85.15,
+      "end": 88.75,
+      "tail": 0.0,
+      "pictureStart": 85.15
+    },
+    {
+      "id": "e2c",
+      "head": 0.267,
+      "file": "shots/e2c.mp4",
+      "framing": "close",
+      "start": 92.4,
+      "end": 93.4,
+      "tail": 0.0,
+      "pictureStart": 92.4
+    },
+    {
+      "id": "e3a",
+      "head": 0.267,
+      "file": "shots/e3a.mp4",
+      "framing": "med",
+      "start": 119.65,
+      "end": 125.55,
+      "tail": 0.0,
+      "pictureStart": 135.0
+    },
+    {
+      "id": "e3b",
+      "head": 0.267,
+      "file": "shots/e3b.mp4",
+      "framing": "mid",
+      "start": 127.6,
+      "end": 131.85,
+      "tail": 0.0,
+      "pictureStart": 127.6
+    },
+    {
+      "id": "outro",
+      "head": 0.267,
+      "file": "shots/outro.mp4",
+      "framing": "close",
+      "start": 150.95,
+      "end": 154.9,
+      "tail": 0.0,
+      "pictureStart": 148.5
+    },
+    {
+      "id": "ctaa",
+      "head": 0.267,
+      "file": "shots/ctaa.mp4",
+      "framing": "med",
+      "start": 164.15,
+      "end": 167.8,
+      "tail": 0.0,
+      "pictureStart": 164.15
+    },
+    {
+      "id": "ctab",
+      "head": 0.267,
+      "file": "shots/ctab.mp4",
+      "framing": "mid",
+      "start": 172.8,
+      "end": 175.5,
+      "tail": 0.8,
+      "pictureStart": 110.0
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Build every asset the "Morning" composition needs from the 4K camera original.
+#
+#   ./scripts/prepare-morning.sh <A001_xxx.mp4> [ffmpeg]
+#
+# morning-voice.m4a   the camera mic sat at about -45 dBFS: lift, denoise,
+#                     compress, de-ess, then set the speech level and cap the
+#                     peaks (scripts/build-voice.py) — the voice carries this
+#                     reel, so it sits well above the bed
+# morning-music.m4a   124 bpm bed (scripts/music.py)
+# shots/*.mp4         one file per shot, cropped out of the 4K frame at three
+#                     framings, with handle frames for the dissolves
+set -euo pipefail
+
+SRC=${1:?usage: prepare-morning.sh <source.mp4> [ffmpeg]}
+FFMPEG=${2:-ffmpeg}
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+OUT="$ROOT/public"
+
+mkdir -p "$OUT"
+
+echo "→ morning-voice.m4a"
+python3 "$ROOT/scripts/build-voice.py" "$SRC" "$OUT/morning-voice.m4a" "$FFMPEG"
+
+echo "→ morning-music.m4a"
+python3 "$ROOT/scripts/music.py" 42 "$OUT/morning-beat.wav" 124
+"$FFMPEG" -hide_banner -loglevel error -i "$OUT/morning-beat.wav" \
+  -c:a aac -b:a 192k -ar 48000 -movflags +faststart "$OUT/morning-music.m4a" -y
+python3 "$ROOT/scripts/check-music.py" "$OUT/morning-beat.wav"
+rm -f "$OUT/morning-beat.wav"
+
+echo "→ shots/"
+python3 "$ROOT/scripts/cut-shots.py" "$SRC" "$FFMPEG"
+
+echo "done. (scripts/presence.py checks whether any shot needs to borrow its picture)"

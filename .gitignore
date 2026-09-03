@@ -1,0 +1,7 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Scratch renders stay out of Git; finished cuts are committed under renders/.
+out
