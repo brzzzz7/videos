@@ -15,6 +15,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Style`** — is the trending cut for you, 21 s | `renders/reel-coupe-1080x1920.mp4` | `public/talk8.mp4` + `public/cut-broll.mp4` |
 | **`Errors`** — 3 mistakes he sees every day, 25 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
 | **`Copy`** — why he won't copy a photo, 27 s | `renders/reel-copie-1080x1920.mp4` | `public/talk10.mp4` |
+| **`Secrets`** — what barbers never tell you, 30 s | `renders/reel-secrets-1080x1920.mp4` | `public/talk11.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -31,6 +32,7 @@ cross-dissolves for `Morning`.
 | Audio (Style) | `voice8.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Errors) | `voice9.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Copy) | `voice10.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
+| Audio (Secrets) | `voice11.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions), `sfx/*.m4a` (the cue-sound library) |
 
 ## Commands
@@ -380,6 +382,21 @@ Same grammar as the rest, and the first reel to carry his mark.
   library entries were for.
 - Long sentences again — five segments across 29 s — so the phrases come from a
   second silence pass at 0.10 s with each sub-phrase transcribed on its own.
+
+### `Secrets` — the three things they don't say
+
+Three points again, run together without pauses, so the scenes start a beat into
+each item rather than on its first word — the same solve as `Errors` and for the
+same reason. The logo rides top left as on `Copy`.
+
+- The hook splits on the payoff rather than in the middle of the sentence: "il y
+  a des trucs que les barbiers" sets it up, "ne te disent jamais" takes the
+  marker. His next line, "je vais t'en casser 3", gets its own caption
+  underneath while the hook is still on screen.
+- **Scenes**: the "ouais, nickel" that arrives with the scissors still in hand,
+  the salon look broken into products / blow-dry / ten minutes on you, a clock
+  running to the next morning, three face shapes under a struck-out "aucune
+  coupe ne fait ça", and the two-minute diagnosis.
 
 #### A trap worth knowing
 

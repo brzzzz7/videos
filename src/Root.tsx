@@ -6,6 +6,7 @@ import { PriceReel } from "./PriceReel";
 import { QuestionsReel } from "./QuestionsReel";
 import { StoriesReel } from "./StoriesReel";
 import { CopyReel } from "./CopyReel";
+import { SecretsReel } from "./SecretsReel";
 import { ErrorsReel } from "./ErrorsReel";
 import { StyleReel } from "./StyleReel";
 import { SolutionsReel } from "./SolutionsReel";
@@ -16,6 +17,7 @@ import { FPS as PRICE_FPS, totalFrames as priceFrames } from "./price";
 import { FPS as QUESTIONS_FPS, totalFrames as questionsFrames } from "./questions";
 import { FPS as STORIES_FPS, totalFrames as storiesFrames } from "./stories";
 import { FPS as COPY_FPS, totalFrames as copyFrames } from "./copy";
+import { FPS as SECRETS_FPS, totalFrames as secretsFrames } from "./secrets";
 import { FPS as ERRORS_FPS, totalFrames as errorsFrames } from "./errors";
 import { FPS as STYLE_FPS, totalFrames as styleFrames } from "./style";
 import { FPS as SOLUTIONS_FPS, totalFrames as solutionsFrames } from "./solutions";
@@ -31,6 +33,14 @@ export const RemotionRoot: React.FC = () => {
         component={Reel}
         durationInFrames={totalFrames}
         fps={FPS}
+        width={theme.width}
+        height={theme.height}
+      />
+      <Composition
+        id="Secrets"
+        component={SecretsReel}
+        durationInFrames={secretsFrames}
+        fps={SECRETS_FPS}
         width={theme.width}
         height={theme.height}
       />
