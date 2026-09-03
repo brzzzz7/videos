@@ -7,6 +7,7 @@
  * transcript.
  */
 
+export { sfxFile } from "./lib/sfx";
 import {
   buildClips,
   groupLines,
@@ -84,4 +85,3 @@ cueSounds.forEach((cue, i) => {
   }
 });
 
-export const sfxFile = (name: Sfx) => `sfx/${name}.m4a`;

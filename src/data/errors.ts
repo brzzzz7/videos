@@ -8,6 +8,11 @@
  * parce qu'elle est tendance", which is the line worth a proof-read.
  */
 
+/** The cue sounds live in one list, shared by every reel. */
+import type { Sfx } from "../lib/sfx";
+
+export type { Sfx };
+
 export type Phrase = { start: number; end: number; text: string };
 
 export const phrases: Phrase[] = [
@@ -53,8 +58,6 @@ export type Scene =
   | { kind: "product" }
   | { kind: "trend" }
   | { kind: "cta" };
-
-export type Sfx = "pop" | "tick" | "chime" | "swoosh" | "marimba" | "lift";
 
 export type Cue = {
   /** source seconds */

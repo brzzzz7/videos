@@ -12,6 +12,7 @@
  */
 
 import spansJson from "./data/price-spans.json";
+export { sfxFile } from "./lib/sfx";
 import {
   buildClips,
   groupLines,
@@ -23,7 +24,7 @@ import {
   type Line,
   type Word,
 } from "./lib/captions";
-import { cues, emphasis, phrases, type Cue, type Sfx } from "./data/price";
+import { cues, emphasis, phrases, type Cue } from "./data/price";
 
 export const FPS = 30;
 /**
@@ -96,8 +97,6 @@ frameCues.forEach((cue, i) => {
     );
   }
 });
-
-export const sfxFile = (name: Sfx) => `sfx/${name}.m4a`;
 
 /**
  * How open the split is at a given frame: 0 = full frame, 1 = halves.

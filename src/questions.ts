@@ -7,6 +7,7 @@
  */
 
 import spansJson from "./data/questions-spans.json";
+export { sfxFile } from "./lib/sfx";
 import {
   buildClips,
   groupLines,
@@ -18,7 +19,7 @@ import {
   type Line,
   type Word,
 } from "./lib/captions";
-import { cues, emphasis, phrases, type Cue, type Sfx } from "./data/questions";
+import { cues, emphasis, phrases, type Cue } from "./data/questions";
 
 export const FPS = 30;
 export const SOURCE_DURATION = 45.09;
@@ -106,8 +107,6 @@ frameCues.forEach((cue, i) => {
     );
   }
 });
-
-export const sfxFile = (name: Sfx) => `sfx/${name}.m4a`;
 
 /** Window a scene occupies, including the frames it wipes in and out over. */
 export const cueWindow = (cue: FrameCue) => ({

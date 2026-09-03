@@ -14,7 +14,9 @@ import {
   type Line,
   type Word,
 } from "./lib/captions";
-import { cues, emphasis, phrases, type Cue, type Sfx } from "./data/split";
+import { cues, emphasis, phrases, type Cue } from "./data/split";
+
+export { sfxFile } from "./lib/sfx";
 
 export const FPS = 30;
 export const SOURCE_DURATION = 63.13;
@@ -71,8 +73,6 @@ frameCues.forEach((cue, i) => {
     );
   }
 });
-
-export const sfxFile = (name: Sfx) => `sfx/${name}.m4a`;
 
 /**
  * How open the split is at a given frame: 0 = full frame, 1 = halves.

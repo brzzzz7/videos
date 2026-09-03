@@ -9,6 +9,11 @@
  * "la Diashti" and "la grève des cheveux" for minoxidil, DHT and la greffe.
  */
 
+/** The cue sounds live in one list, shared by every reel. */
+import type { Sfx } from "../lib/sfx";
+
+export type { Sfx };
+
 export type Phrase = { start: number; end: number; text: string };
 
 export const phrases: Phrase[] = [
@@ -73,8 +78,6 @@ export type Scene =
   | { kind: "graft" }
   | { kind: "medical" }
   | { kind: "cta" };
-
-export type Sfx = "pop" | "tick" | "chime" | "swoosh" | "marimba" | "lift";
 
 /** Scene boundaries in source seconds; each one fills the frame. */
 export const scenes: { at: number; scene: Scene; sfx: Sfx }[] = [

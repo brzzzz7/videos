@@ -6,6 +6,11 @@
  * cleaned by hand.
  */
 
+/** The cue sounds live in one list, shared by every reel. */
+import type { Sfx } from "../lib/sfx";
+
+export type { Sfx };
+
 export type Phrase = { start: number; end: number; text: string };
 
 export const phrases: Phrase[] = [
@@ -46,8 +51,6 @@ export type Scene =
   | { kind: "morpho" }
   | { kind: "adapt" }
   | { kind: "cta" };
-
-export type Sfx = "pop" | "tick" | "chime" | "swoosh" | "marimba" | "lift";
 
 export type Cue = {
   /** source seconds */

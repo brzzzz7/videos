@@ -6,6 +6,11 @@
  * runs the source end to end. Auto-transcribed then cleaned by hand.
  */
 
+/** The cue sounds live in one list, shared by every reel. */
+import type { Sfx } from "../lib/sfx";
+
+export type { Sfx };
+
 export type Phrase = { start: number; end: number; text: string };
 
 export const phrases: Phrase[] = [
@@ -57,8 +62,6 @@ export type Illo =
   | { kind: "matte" }
   | { kind: "doses" }
   | { kind: "cta" };
-
-export type Sfx = "pop" | "tick" | "chime" | "swoosh" | "marimba" | "lift";
 
 export type Cue = {
   /** source seconds */

@@ -29,7 +29,7 @@ cross-dissolves for `Morning`.
 | Audio (Questions) | `voice7.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Style) | `voice8.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Errors) | `voice9.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
-| Shared | `whoosh.m4a`, `impact.m4a` (transitions) |
+| Shared | `whoosh.m4a`, `impact.m4a` (transitions), `sfx/*.m4a` (the cue-sound library) |
 
 ## Commands
 
