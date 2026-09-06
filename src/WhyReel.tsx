@@ -25,6 +25,7 @@ import {
   TwoFaces,
 } from "./components/illos/why";
 import { ramp } from "./lib/audio";
+import { bedFile } from "./lib/music";
 import type { Scene } from "./data/why";
 import { hook } from "./data/why";
 import {
@@ -439,16 +440,18 @@ export const WhyReel: React.FC = () => {
       ))}
 
       <Audio
-        src={staticFile("music-suspense.m4a")}
+        src={staticFile(bedFile("music-thankyou"))}
         volume={(f) =>
-          // same bed as the last reel: held well under the voice, forward only
-          // for the opening and the CTA
+          // A vocal bed, unlike every other reel's. Two voices at the same
+          // level fight, so it sits 2 dB further down under speech than the
+          // instrumental beds do (0.08 against 0.10) and only comes forward
+          // where he has stopped talking: the opening and the CTA.
           ramp(f, [
-            [0, 0.22],
-            [26, 0.1],
-            [ctaFrame - 24, 0.1],
-            [ctaFrame + 14, 0.34],
-            [totalFrames - 22, 0.32],
+            [0, 0.20],
+            [26, 0.08],
+            [ctaFrame - 24, 0.08],
+            [ctaFrame + 14, 0.30],
+            [totalFrames - 22, 0.28],
             [totalFrames, 0],
           ])
         }

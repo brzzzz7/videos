@@ -34,7 +34,7 @@ cross-dissolves for `Morning`.
 | Audio (Errors) | `voice9.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Copy) | `voice10.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Secrets) | `voice11.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
-| Audio (Why) | `voice12.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
+| Audio (Why) | `voice12.m4a` (speech), `music-thankyou.m4a` (a supplied track), `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions), `sfx/*.m4a` (the cue-sound library) |
 
 ## Commands
