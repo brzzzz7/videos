@@ -17,10 +17,9 @@ export const BEDS = {
   /** 96 bpm A-minor build — the one most reels use. */
   "music-suspense": { file: "music-suspense.m4a", lufs: -16.9, vocals: false },
   /**
-   * A supplied track. It is a full vocal song: the 37 s taken from 16 s in is
-   * the least-sung stretch of it, and even that has singing over roughly a
-   * third of its length, so it wants a lower ramp under speech than the
-   * instrumental beds do.
+   * A supplied track, from its own opening. It is a full vocal song — the
+   * first 12 s are instrumental and the singing starts after that — so it
+   * wants a lower ramp under speech than the instrumental beds do.
    */
   "music-thankyou": { file: "music-thankyou.m4a", lufs: -16.9, vocals: true },
 } as const;

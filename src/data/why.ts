@@ -31,7 +31,7 @@ export const phrases: Phrase[] = [
   { start: 31.15, end: 33.07, text: "Ça prend plus de temps, mais le résultat n'a rien à voir." },
   { start: 33.40, end: 35.97, text: "C'est pour ça que chez moi, ça commence toujours par la même question :" },
   { start: 36.07, end: 37.23, text: "c'est quoi ton visage ?" },
-  { start: 37.58, end: 38.60, text: "Et pas c'est quoi la tendance." },
+  { start: 37.58, end: 39.08, text: "Et pas c'est quoi la tendance." },
 ];
 
 /** Words that take the warm accent colour. */
@@ -87,7 +87,7 @@ export const cues: Cue[] = [
   { at: 20.05, until: 22.25, scene: { kind: "trend" }, sfx: "snap" },
   { at: 24.20, until: 27.95, scene: { kind: "declic" }, sfx: "sweep" },
   { at: 29.70, until: 33.10, scene: { kind: "diag" }, sfx: "pop" },
-  { at: 34.90, until: 38.60, scene: { kind: "cta" }, sfx: "lift" },
+  { at: 34.90, until: 39.08, scene: { kind: "cta" }, sfx: "lift" },
 ];
 
 /**

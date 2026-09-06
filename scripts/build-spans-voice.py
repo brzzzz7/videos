@@ -69,6 +69,40 @@ def rms(x):
     return float(np.sqrt((x.astype(np.float64) ** 2).mean() + 1e-15))
 
 
+def extend_tail(spans, samples, sr=16000, limit=0.5):
+    """Run the last span to the true end of the utterance.
+
+    The gate that is right for pauses in the middle of a take is too high for
+    the end of one: a final consonant decays, and the tail of "tendance" on this
+    recording faded from -33 to -56 dBFS over 0.2 s, so silencedetect called the
+    word over while the sibilance was still running. Dropping the gate globally
+    would move every boundary, so only the last one is re-measured — and against
+    the recording's own room tone rather than an absolute dBFS gate, because an
+    absolute one silently means "loud recording" and this camera track sits 17 dB
+    below the processed voice. The tail is over when it reaches the room, so the
+    floor is 8 dB above it; `limit` stops a noisy stretch running away.
+    """
+    if not spans:
+        return spans
+    block = int(0.02 * sr)
+    n_all = len(samples) // block
+    levels = np.array([rms(samples[i * block:(i + 1) * block]) for i in range(n_all)])
+    room = float(np.percentile(levels, 10))
+    floor = room * 10 ** (8 / 20)
+    tail = samples[int(spans[-1][1] * sr):int((spans[-1][1] + limit) * sr)]
+    last = 0
+    for i in range(len(tail) // block):
+        if rms(tail[i * block:(i + 1) * block]) > floor:
+            last = i + 1
+    if last:
+        grown = round(spans[-1][1] + last * block / sr + 0.04, 3)
+        print(f"  tail: last span {spans[-1][1]:.2f} -> {grown:.2f} "
+              f"(decays to room tone {20 * np.log10(max(room, 1e-9)):.0f} dBFS "
+              f"after the gate calls it over)")
+        spans[-1][1] = grown
+    return spans
+
+
 def drop_silent(spans, samples, sr=16000):
     """Remove spans that hold no speech — a breath before the first word, say."""
     levels = [rms(samples[int(a * sr):int(b * sr)]) for a, b in spans]
@@ -104,7 +138,9 @@ def main():
     if total - cursor > MIN_SPAN:
         spans.append([round(cursor, 3), round(min(total, cursor + (total - cursor)), 3)])
 
-    spans = drop_silent(spans, decode())
+    samples = decode()
+    spans = drop_silent(spans, samples)
+    spans = extend_tail(spans, samples)
     kept = sum(b - a for a, b in spans)
     with open(OUT, "w") as f:
         json.dump({"source": os.path.basename(SRC),

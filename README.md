@@ -16,7 +16,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Errors`** — 3 mistakes he sees every day, 25 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
 | **`Copy`** — why he won't copy a photo, 27 s | `renders/reel-copie-1080x1920.mp4` | `public/talk10.mp4` |
 | **`Secrets`** — what barbers never tell you, 30 s | `renders/reel-secrets-1080x1920.mp4` | `public/talk11.mp4` |
-| **`Why`** — why he does visagisme, 36 s | `renders/reel-visagisme-1080x1920.mp4` | `public/talk12.mp4` |
+| **`Why`** — why he does visagisme, 35.7 s | `renders/reel-visagisme-1080x1920.mp4` | `public/talk12.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -417,6 +417,10 @@ the question he starts from.
 - Four of the six gaps were under a second when the scenes sat on his sentence
   boundaries — he speaks without pausing — so each starts a beat into its point.
   49 % scene, six windows to camera.
+- The bed is a supplied vocal track, played from its own opening, and the last
+  span runs to the end of the sibilance on "tendance" rather than to where
+  `silencedetect` called the word over — see `extend_tail` in
+  `scripts/build-spans-voice.py`.
 
 #### A trap worth knowing
 
