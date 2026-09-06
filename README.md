@@ -16,6 +16,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Errors`** — 3 mistakes he sees every day, 25 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
 | **`Copy`** — why he won't copy a photo, 27 s | `renders/reel-copie-1080x1920.mp4` | `public/talk10.mp4` |
 | **`Secrets`** — what barbers never tell you, 30 s | `renders/reel-secrets-1080x1920.mp4` | `public/talk11.mp4` |
+| **`Why`** — why he does visagisme, 36 s | `renders/reel-visagisme-1080x1920.mp4` | `public/talk12.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -33,6 +34,7 @@ cross-dissolves for `Morning`.
 | Audio (Errors) | `voice9.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Copy) | `voice10.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Audio (Secrets) | `voice11.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
+| Audio (Why) | `voice12.m4a` (speech), `music-suspense.m4a` again, `sfx/*.m4a` |
 | Shared | `whoosh.m4a`, `impact.m4a` (transitions), `sfx/*.m4a` (the cue-sound library) |
 
 ## Commands
@@ -397,6 +399,24 @@ same reason. The logo rides top left as on `Copy`.
   the salon look broken into products / blow-dry / ten minutes on you, a clock
   running to the next morning, three face shapes under a struck-out "aucune
   coupe ne fait ça", and the two-minute diagnosis.
+
+### `Why` — how he ended up doing visagisme
+
+The longest script so far, and the only one that is a story rather than a list,
+so the six scenes follow its arc instead of numbering points: how he used to
+work, what he kept seeing, what frustrated him, the turn, what he does now, and
+the question he starts from.
+
+- The hook puts the marker on the word that names the subject — "on me demande
+  souvent pourquoi je fais" sets it up, "du visagisme" takes the swipe, "plutôt
+  que des coupes classiques" closes it.
+- The faces are drawn with the fringe construction from `Style` rather than a
+  dark rim around an ellipse: a rim reads as a bald egg, and a reel about which
+  lines suit which face cannot afford that. The `declic` scene adds the
+  construction lines a morphology reading actually draws.
+- Four of the six gaps were under a second when the scenes sat on his sentence
+  boundaries — he speaks without pausing — so each starts a beat into its point.
+  49 % scene, six windows to camera.
 
 #### A trap worth knowing
 
