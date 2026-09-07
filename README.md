@@ -16,7 +16,7 @@ shoot, both driven by data rather than a hand-placed timeline.
 | **`Errors`** — 3 mistakes he sees every day, 25 s | `renders/reel-erreurs-1080x1920.mp4` | `public/talk9.mp4` |
 | **`Copy`** — why he won't copy a photo, 27 s | `renders/reel-copie-1080x1920.mp4` | `public/talk10.mp4` |
 | **`Secrets`** — what barbers never tell you, 30 s | `renders/reel-secrets-1080x1920.mp4` | `public/talk11.mp4` |
-| **`Why`** — why he does visagisme, 35.7 s | `renders/reel-visagisme-1080x1920.mp4` | `public/talk12.mp4` |
+| **`Why`** — why he does visagisme, 33.6 s | `renders/reel-visagisme-1080x1920.mp4` | `public/talk12.mp4` |
 
 Bold-caption style for `Reel`, Apple-style captions with a soft shadow and
 cross-dissolves for `Morning`.
@@ -421,6 +421,11 @@ the question he starts from.
   span runs to the end of the sibilance on "tendance" rather than to where
   `silencedetect` called the word over — see `extend_tail` in
   `scripts/build-spans-voice.py`.
+- **34 s cap.** He holds under 4 s of silence in the whole take, so cutting the
+  pauses as hard as they go still lands at 34.9 s; the rest is `RATE = 1.05`.
+  The energy on top of the tempo is in the cutting, not in more cuts: a harder
+  spring kick (5 % against the 3.6 % the other reels use), a wider slow push,
+  and 6-frame scene wipes instead of 8. Every word is still there.
 
 #### A trap worth knowing
 

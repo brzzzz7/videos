@@ -37,6 +37,9 @@ import {
   FPS,
   RATE,
   frameCues,
+  CAPTIONS_FROM,
+  HOOK_BEATS,
+  HOOK_FRAMES,
   lines,
   SCENE_FRAMES,
   sfxFile,
@@ -89,7 +92,10 @@ const Facecam: React.FC = () => {
     fps,
     config: { damping: 15, stiffness: 190, mass: 0.55 },
   });
-  const kick = frame < cutFrames[0] ? 1 : 0.964 + settle * 0.036;
+  // A harder kick than the other reels use: the ask was for more energy, and on
+  // a take where the camera never moves the cut itself is the only motion there
+  // is to push on. 3.6 % read as a settle, 5 % reads as a hit.
+  const kick = frame < cutFrames[0] ? 1 : 0.95 + settle * 0.05;
 
   // Which clip we are inside, so the push can restart with each one.
   let index = 0;
@@ -107,7 +113,7 @@ const Facecam: React.FC = () => {
   const push = interpolate(
     frame - clip.from,
     [0, clip.durationInFrames],
-    dir > 0 ? [1.0, 1.05] : [1.05, 1.0],
+    dir > 0 ? [1.0, 1.07] : [1.07, 1.0],
     { extrapolateRight: "clamp" },
   );
 
@@ -176,13 +182,7 @@ const SceneWipe: React.FC<{ length: number; children: React.ReactNode }> = ({
   );
 };
 
-export const HOOK_FRAMES = 118;   // 3.9 s — it clears before the first scene
 
-/**
- * Captions come back where phrase 0 ends, not where the hook leaves: the hook
- * is that phrase, so it is the caption for it.
- */
-export const CAPTIONS_FROM = 92;
 
 /**
  * The opening hook: his own first sentence, over the top of the frame.
@@ -207,15 +207,14 @@ const HookCard: React.FC = () => {
       config: { damping: 13, stiffness: 200, mass: 0.6 },
     });
 
-  // Where each part of the sentence falls inside phrase 0. The numbers are its
-  // own word timings, from the same syllable-weighted pass the captions use:
-  // "on me demande souvent pourquoi je fais" 8-46, "du visagisme" 46-63,
-  // "plutôt que juste des coupes classiques" to 91.
-  const first = pop(8);
-  const punch = pop(47);
-  const rest = pop(64);
+  // Each part springs on the word that opens it, read out of the same
+  // syllable-weighted pass the captions use (HOOK_BEATS in why.ts) rather than
+  // written down as frame numbers, which only hold for one cut and one tempo.
+  const first = pop(HOOK_BEATS.first);
+  const punch = pop(HOOK_BEATS.punch + 1);
+  const rest = pop(HOOK_BEATS.rest + 1);
   // the marker sweeps across while he says "du visagisme"
-  const swipe = interpolate(frame, [49, 63], [0, 1], {
+  const swipe = interpolate(frame, [HOOK_BEATS.punch + 3, HOOK_BEATS.rest], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });

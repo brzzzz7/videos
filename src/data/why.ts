@@ -31,7 +31,7 @@ export const phrases: Phrase[] = [
   { start: 31.15, end: 33.07, text: "Ça prend plus de temps, mais le résultat n'a rien à voir." },
   { start: 33.40, end: 35.97, text: "C'est pour ça que chez moi, ça commence toujours par la même question :" },
   { start: 36.07, end: 37.23, text: "c'est quoi ton visage ?" },
-  { start: 37.58, end: 39.08, text: "Et pas c'est quoi la tendance." },
+  { start: 37.58, end: 39.07, text: "Et pas c'est quoi la tendance." },
 ];
 
 /** Words that take the warm accent colour. */
@@ -80,14 +80,20 @@ export type Cue = {
  * Six scenes, each starting a beat into its point rather than on its first
  * word: he speaks without pausing, so placed on his sentence boundaries four of
  * these six left under a second of facecam between them.
+ *
+ * Each one now leaves a little before its sentence does. At RATE 1.05 the gaps
+ * between them shrink with everything else, and four of the five were within a
+ * frame or two of the 42-frame floor that keeps a return to camera from reading
+ * as a flicker — so the scenes give the frames back rather than the guard being
+ * lowered to fit them.
  */
 export const cues: Cue[] = [
   { at: 8.10, until: 10.00, scene: { kind: "photo" }, sfx: "shutter" },
-  { at: 15.00, until: 17.95, scene: { kind: "twofaces" }, sfx: "chime" },
-  { at: 20.05, until: 22.25, scene: { kind: "trend" }, sfx: "snap" },
-  { at: 24.20, until: 27.95, scene: { kind: "declic" }, sfx: "sweep" },
-  { at: 29.70, until: 33.10, scene: { kind: "diag" }, sfx: "pop" },
-  { at: 34.90, until: 39.08, scene: { kind: "cta" }, sfx: "lift" },
+  { at: 15.00, until: 17.85, scene: { kind: "twofaces" }, sfx: "chime" },
+  { at: 20.05, until: 22.08, scene: { kind: "trend" }, sfx: "snap" },
+  { at: 24.20, until: 27.92, scene: { kind: "declic" }, sfx: "sweep" },
+  { at: 29.70, until: 33.01, scene: { kind: "diag" }, sfx: "pop" },
+  { at: 34.90, until: 39.07, scene: { kind: "cta" }, sfx: "lift" },
 ];
 
 /**

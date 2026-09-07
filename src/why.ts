@@ -29,10 +29,13 @@ export const FPS = 30;
 export const SOURCE_DURATION = 39.20;
 
 /**
- * No speed-up: 39.2 s comes in at 35.5 s on pause-cutting alone, and no cap
- * was asked for.
+ * Global speed-up. He barely pauses — the take holds under 4 s of silence in
+ * all — so cutting the pauses as hard as they take still lands at 34.9 s, and
+ * the rest of the way to the 34 s cap comes from tempo. The voice is retimed in
+ * its own file (`VOICE_TEMPO=1.05` on build-voice.py, i.e. `atempo`, so the
+ * pitch is unchanged); the video track carries `playbackRate`.
  */
-export const RATE = 1;
+export const RATE = 1.05;
 
 /**
  * Frames advance RATE source frames each, so every source-second mapping runs
@@ -57,7 +60,7 @@ export const srcToFrame = makeSrcToFrame(clips, PLAY_FPS);
 export const cutFrames = clips.slice(1).map((c) => c.from);
 
 /** Frames a scene takes to wipe in and out over the facecam. */
-export const SCENE_FRAMES = 8;
+export const SCENE_FRAMES = 6;
 
 const hot = new Set(emphasis.map((w) => normalise(w)));
 
@@ -129,3 +132,35 @@ export const cueMark =
     srcToFrame(seconds) - cueWindow(cue).from;
 
 export const ctaFrame = frameCues[frameCues.length - 1].from;
+
+/**
+ * The hook is his opening sentence spoken aloud, so its parts have to land on
+ * his words — and its beats were written down as frame numbers that were only
+ * right for the cut and the tempo they were measured against. They are read out
+ * of the same syllable-weighted word timing the captions use instead, so a
+ * re-cut or a change of RATE moves them with everything else.
+ */
+const opening: Word[] = timeWords(phrases[0], srcToFrame, hot);
+const wordFrame = (text: string): number => {
+  const word = opening.find((w) => normalise(w.text) === normalise(text));
+  if (!word) throw new Error(`why: the hook wants "${text}", not in phrase 0`);
+  return word.from;
+};
+
+export const HOOK_BEATS = {
+  /** "on me demande souvent pourquoi je fais" */
+  first: wordFrame("On"),
+  /** "du visagisme" — the part that takes the marker */
+  punch: wordFrame("du"),
+  /** "plutôt que juste des coupes classiques" */
+  rest: wordFrame("plutôt"),
+};
+
+/** The hook holds to the end of "classiques.", a beat past the sentence. */
+export const HOOK_FRAMES = srcToFrame(phrases[1].end) + 5;
+
+/**
+ * Captions come back where phrase 0 ends, not where the hook leaves: the hook
+ * is that phrase, so it is the caption for it.
+ */
+export const CAPTIONS_FROM = srcToFrame(phrases[0].end) + 1;
